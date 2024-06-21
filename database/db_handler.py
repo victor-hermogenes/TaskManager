@@ -1,4 +1,5 @@
 import sqlite3
+from models import task
 
 
 class DBHandler:
@@ -9,14 +10,14 @@ class DBHandler:
 
     
     def create_table(self):
-        self.cursor.execute("""
+        self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS tasks (
-                id INTERGER PRIMARY KEY.
+                id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL,
                 description TEXT,
-                status TEXT NOT NULL                
+                status TEXT NOT NULL
             )
-        """)
+        ''')
         self.connection.commit()
 
 
@@ -28,8 +29,8 @@ class DBHandler:
 
     def get_tasks(self):
         self.cursor.execute("SELECT name, description, status FROM tasks")
-        tasks = self.cursos.fetchall()
-        return [Task(name, description, status) for name, description, status in tasks]
+        tasks = self.cursor.fetchall()
+        return [task.Task(name, description, status) for name, description, status in tasks]
     
 
     def close(self):
