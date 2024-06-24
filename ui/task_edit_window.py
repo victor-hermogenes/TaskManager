@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QDateEdit, QCheckBox, QWidget
 from PyQt5.QtCore import QDate
 
+
 class TaskEditWindow(QDialog):
     def __init__(self, task, save_callback):
         super().__init__()
@@ -22,15 +23,15 @@ class TaskEditWindow(QDialog):
 
         self.start_date_label = QLabel("Start Date:")
         self.start_date_input = QDateEdit(self)
-        self.start_date_input.setDate(QDate.currentDate())
+        self.start_date_input.setDate(QDate.fromString(self.task.start_date, "yyyy-MM-dd"))
 
         self.due_date_label = QLabel("Due Date:")
         self.due_date_input = QDateEdit(self)
-        self.due_date_input.setDate(QDate.currentDate())
+        self.due_date_input.setDate(QDate.fromString(self.task.due_date, "yyyy-MM-dd"))
 
         self.checkboxes = []
-        self.add_checkbox("Checkbox 1")
-        self.add_checkbox("Checkbox 2")
+        for checked, text in self.task.checkboxes:
+            self.add_checkbox(text, checked)
 
         self.save_button = QPushButton("Save", self)
         self.save_button.clicked.connect(self.save_task)
@@ -50,10 +51,11 @@ class TaskEditWindow(QDialog):
 
         layout.addWidget(self.save_button)
 
-    def add_checkbox(self, label_text):
+    def add_checkbox(self, label_text, checked=False):
         checkbox_widget = QWidget(self)
         checkbox_layout = QHBoxLayout(checkbox_widget)
         checkbox = QCheckBox(self)
+        checkbox.setChecked(checked)
         checkbox_label = QLineEdit(self)
         checkbox_label.setText(label_text)
         checkbox_layout.addWidget(checkbox)
