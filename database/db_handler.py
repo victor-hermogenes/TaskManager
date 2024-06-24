@@ -1,14 +1,13 @@
 import sqlite3
 from models.task import Task
 
-
 class DBHandler:
     def __init__(self, db_name='tasks.db'):
         try:
             self.connection = sqlite3.connect(db_name)
             self.cursor = self.connection.cursor()
             self.create_table()
-            print(f"Databe {db_name} conneted successfully.")
+            print(f"Database {db_name} connected successfully.")
         except sqlite3.Error as e:
             print(f"Error connecting to database: {e}")
 
@@ -24,19 +23,40 @@ class DBHandler:
                 )
             ''')
             self.connection.commit()
+            print("Table 'tasks' created successfully.")
         except sqlite3.Error as e:
             print(f"Error creating table: {e}")
 
-
+    
     def add_task(self, task):
         try:
             self.cursor.execute("INSERT INTO tasks (name, description, status) VALUES (?, ?, ?)",
                                 (task.name, task.description, task.status))
             self.connection.commit()
+            print(f"Task '{task.name}' added successfully.")
         except sqlite3.Error as e:
             print(f"Error adding task: {e}")
-    
 
+    
+    def update_task(self, task):
+        try:
+            self.cursor.execute("UPDATE tasks SET status = ? WHERE name = ?",
+                                (task.status, task.name))
+            self.connection.commit()
+            print(f"Task '{task.name}' updated successfully.")
+        except sqlite3.Error as e:
+            print(f"Error updating task: {e}")
+
+    
+    def delete_task(self, task_name):
+        try:
+            self.cursor.execute("DELETE FROM tasks WHERE name = ?", (task_name,))
+            self.connection.commit()
+            print(f"Task '{task_name}' deleted successfully.")
+        except sqlite3.Error as e:
+            print(f"Error deleting task: {e}")
+
+    
     def get_tasks(self):
         try:
             self.cursor.execute("SELECT name, description, status FROM tasks")
@@ -44,10 +64,12 @@ class DBHandler:
             return [Task(name, description, status) for name, description, status in tasks]
         except sqlite3.Error as e:
             print(f"Error retrieving tasks: {e}")
+            return []
     
 
     def close(self):
         try:
             self.connection.close()
+            print("Database connection closed successfully.")
         except sqlite3.Error as e:
             print(f"Error closing the database connection: {e}")

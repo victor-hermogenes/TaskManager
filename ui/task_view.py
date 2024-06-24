@@ -3,7 +3,6 @@ from PyQt5.QtCore import QSize
 from database.db_handler import DBHandler
 from models.task import Task
 
-
 class TaskView(QWidget):
     def __init__(self):
         super().__init__()
@@ -41,7 +40,7 @@ class TaskView(QWidget):
 
     
     def add_task_to_list(self, task_name, status="To do", add_to_db=True):
-        task_item_widget = TaskItem(task_name, self.remove_task, status)
+        task_item_widget = TaskItem(task_name, self.update_task, self.remove_task, status)
         task_item = QListWidgetItem(self.task_list)
         task_item.setSizeHint(task_item_widget.sizeHint())
         self.task_list.addItem(task_item)
@@ -52,17 +51,31 @@ class TaskView(QWidget):
         return task_item_widget
 
     
+    def update_task(self, task_item_widget):
+        for i in range(self.task_list.count()):
+            item = self.task_list.item(i)
+            widget = self.task_list.itemWidget(item)
+            if widget is task_item_widget:
+                task_name = widget.label.text()
+                task_status = widget.status_dropdown.currentText()
+                updated_task = Task(name=task_name, status=task_status)
+                self.db_handler.update_task(updated_task)
+                break
+
+    
     def remove_task(self, task_item_widget):
         for i in range(self.task_list.count()):
             item = self.task_list.item(i)
             widget = self.task_list.itemWidget(item)
             if widget is task_item_widget:
+                task_name = widget.label.text()
+                self.db_handler.delete_task(task_name)
                 self.task_list.takeItem(i)
                 break
 
 
 class TaskItem(QWidget):
-    def __init__(self, task_name, delete_callback, status="To do"):
+    def __init__(self, task_name, update_callback, delete_callback, status="To do"):
         super().__init__()
         self.layout = QHBoxLayout(self)
 
@@ -72,6 +85,7 @@ class TaskItem(QWidget):
         self.status_dropdown = QComboBox(self)
         self.status_dropdown.addItems(["To do", "On Going", "Done", "Late", "Cancelled"])
         self.status_dropdown.setCurrentText(status)
+        self.status_dropdown.currentTextChanged.connect(self.status_changed)
 
         # Red "X" button for deletion
         self.delete_button = QPushButton("X", self)
@@ -83,7 +97,12 @@ class TaskItem(QWidget):
         self.layout.addWidget(self.status_dropdown)
         self.layout.addWidget(self.delete_button)
 
+        self.update_callback = update_callback
         self.delete_callback = delete_callback
+
+    
+    def status_changed(self):
+        self.update_callback(self)
 
     
     def delete_task(self):
