@@ -11,15 +11,25 @@ class DBHandler:
         except sqlite3.Error as e:
             print(f"Error connecting to database: {e}")
 
-    
     def create_table(self):
         try:
+            # Check if the table already exists
+            self.cursor.execute("PRAGMA table_info(tasks)")
+            columns = [column[1] for column in self.cursor.fetchall()]
+            if 'start_date' not in columns:
+                # Add new columns if they don't exist
+                self.cursor.execute('ALTER TABLE tasks ADD COLUMN start_date TEXT')
+                self.cursor.execute('ALTER TABLE tasks ADD COLUMN due_date TEXT')
+                self.cursor.execute('ALTER TABLE tasks ADD COLUMN checkboxes TEXT')
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS tasks (
                     id INTEGER PRIMARY KEY,
                     name TEXT NOT NULL,
                     description TEXT,
-                    status TEXT NOT NULL
+                    status TEXT NOT NULL,
+                    start_date TEXT,
+                    due_date TEXT,
+                    checkboxes TEXT
                 )
             ''')
             self.connection.commit()
@@ -27,27 +37,24 @@ class DBHandler:
         except sqlite3.Error as e:
             print(f"Error creating table: {e}")
 
-    
     def add_task(self, task):
         try:
-            self.cursor.execute("INSERT INTO tasks (name, description, status) VALUES (?, ?, ?)",
-                                (task.name, task.description, task.status))
+            self.cursor.execute("INSERT INTO tasks (name, description, status, start_date, due_date, checkboxes) VALUES (?, ?, ?, ?, ?, ?)",
+                                (task.name, task.description, task.status, task.start_date, task.due_date, str(task.checkboxes)))
             self.connection.commit()
             print(f"Task '{task.name}' added successfully.")
         except sqlite3.Error as e:
             print(f"Error adding task: {e}")
 
-    
     def update_task(self, task):
         try:
-            self.cursor.execute("UPDATE tasks SET status = ? WHERE name = ?",
-                                (task.status, task.name))
+            self.cursor.execute("UPDATE tasks SET description = ?, status = ?, start_date = ?, due_date = ?, checkboxes = ? WHERE name = ?",
+                                (task.description, task.status, task.start_date, task.due_date, str(task.checkboxes), task.name))
             self.connection.commit()
             print(f"Task '{task.name}' updated successfully.")
         except sqlite3.Error as e:
             print(f"Error updating task: {e}")
 
-    
     def delete_task(self, task_name):
         try:
             self.cursor.execute("DELETE FROM tasks WHERE name = ?", (task_name,))
@@ -56,16 +63,14 @@ class DBHandler:
         except sqlite3.Error as e:
             print(f"Error deleting task: {e}")
 
-    
     def get_tasks(self):
         try:
-            self.cursor.execute("SELECT name, description, status FROM tasks")
+            self.cursor.execute("SELECT name, description, status, start_date, due_date, checkboxes FROM tasks")
             tasks = self.cursor.fetchall()
-            return [Task(name, description, status) for name, description, status in tasks]
+            return [Task(name, description, status, start_date, due_date, eval(checkboxes)) for name, description, status, start_date, due_date, checkboxes in tasks]
         except sqlite3.Error as e:
             print(f"Error retrieving tasks: {e}")
             return []
-    
 
     def close(self):
         try:
