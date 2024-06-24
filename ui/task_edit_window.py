@@ -69,5 +69,3 @@ class TaskEditWindow(QDialog):
         print(f"Saving task with ID {self.task.id}")  # Debug print
         self.save_callback(self.task)
         self.accept()
-
-
