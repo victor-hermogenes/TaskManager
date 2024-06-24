@@ -27,9 +27,10 @@ class TaskView(QWidget):
         self.load_tasks()
 
     def load_tasks(self):
+        self.task_list.clear()
         tasks = self.db_handler.get_tasks()
         for task in tasks:
-            self.add_task_to_list(task.name, task.status, task.description, task.start_date, task.due_date, task.checkboxes, add_to_db=False)
+            self.add_task_to_list(task.name, task.status, task.description, task.start_date, task.due_date, task.checkboxes, task.id, add_to_db=False)
 
     def add_task(self):
         task_name = self.task_input.text()
@@ -37,10 +38,10 @@ class TaskView(QWidget):
             self.add_task_to_list(task_name)
             self.task_input.clear()
 
-    def add_task_to_list(self, task_name, status="To do", description="", start_date="", due_date="", checkboxes=None, add_to_db=True):
+    def add_task_to_list(self, task_name, status="To do", description="", start_date="", due_date="", checkboxes=None, task_id=None, add_to_db=True):
         if checkboxes is None:
             checkboxes = []
-        task_item_widget = TaskItem(task_name, self.update_task, self.remove_task, status, self.open_edit_window, description, start_date, due_date, checkboxes)
+        task_item_widget = TaskItem(task_name, self.update_task, self.remove_task, status, self.open_edit_window, description, start_date, due_date, checkboxes, task_id)
         task_item = QListWidgetItem(self.task_list)
         task_item.setSizeHint(task_item_widget.sizeHint())
         self.task_list.addItem(task_item)
@@ -93,7 +94,7 @@ class TaskView(QWidget):
 
 
 class TaskItem(QWidget):
-    def __init__(self, task_name, update_callback, delete_callback, status="To do", edit_callback=None, description="", start_date="", due_date="", checkboxes=None):
+    def __init__(self, task_name, update_callback, delete_callback, status="To do", edit_callback=None, description="", start_date="", due_date="", checkboxes=None, task_id=None):
         super().__init__()
         if checkboxes is None:
             checkboxes = []
@@ -126,6 +127,7 @@ class TaskItem(QWidget):
         self.start_date = start_date
         self.due_date = due_date
         self.checkboxes = checkboxes
+        self.task_id = task_id
 
     def status_changed(self):
         self.update_callback(self)

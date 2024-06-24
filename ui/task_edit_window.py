@@ -63,8 +63,9 @@ class TaskEditWindow(QDialog):
     def save_task(self):
         self.task.name = self.name_input.text()
         self.task.description = self.description_input.text()
-        self.task.start_date = self.start_date_input.date().toString()
-        self.task.due_date = self.due_date_input.date().toString()
+        self.task.start_date = self.start_date_input.date().toString("yyyy-MM-dd")
+        self.task.due_date = self.due_date_input.date().toString("yyyy-MM-dd")
         self.task.checkboxes = [(cb["checkbox"].isChecked(), cb["label"].text()) for cb in self.checkboxes]
         self.save_callback(self.task)
         self.accept()
+

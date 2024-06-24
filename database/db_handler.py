@@ -13,14 +13,6 @@ class DBHandler:
 
     def create_table(self):
         try:
-            # Check if the table already exists
-            self.cursor.execute("PRAGMA table_info(tasks)")
-            columns = [column[1] for column in self.cursor.fetchall()]
-            if 'start_date' not in columns:
-                # Add new columns if they don't exist
-                self.cursor.execute('ALTER TABLE tasks ADD COLUMN start_date TEXT')
-                self.cursor.execute('ALTER TABLE tasks ADD COLUMN due_date TEXT')
-                self.cursor.execute('ALTER TABLE tasks ADD COLUMN checkboxes TEXT')
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS tasks (
                     id INTEGER PRIMARY KEY,
@@ -42,14 +34,15 @@ class DBHandler:
             self.cursor.execute("INSERT INTO tasks (name, description, status, start_date, due_date, checkboxes) VALUES (?, ?, ?, ?, ?, ?)",
                                 (task.name, task.description, task.status, task.start_date, task.due_date, str(task.checkboxes)))
             self.connection.commit()
+            task.id = self.cursor.lastrowid  # Get the last inserted row ID
             print(f"Task '{task.name}' added successfully.")
         except sqlite3.Error as e:
             print(f"Error adding task: {e}")
 
     def update_task(self, task):
         try:
-            self.cursor.execute("UPDATE tasks SET description = ?, status = ?, start_date = ?, due_date = ?, checkboxes = ? WHERE name = ?",
-                                (task.description, task.status, task.start_date, task.due_date, str(task.checkboxes), task.name))
+            self.cursor.execute("UPDATE tasks SET name = ?, description = ?, status = ?, start_date = ?, due_date = ?, checkboxes = ? WHERE id = ?",
+                                (task.name, task.description, task.status, task.start_date, task.due_date, str(task.checkboxes), task.id))
             self.connection.commit()
             print(f"Task '{task.name}' updated successfully.")
         except sqlite3.Error as e:
@@ -65,9 +58,9 @@ class DBHandler:
 
     def get_tasks(self):
         try:
-            self.cursor.execute("SELECT name, description, status, start_date, due_date, checkboxes FROM tasks")
+            self.cursor.execute("SELECT id, name, description, status, start_date, due_date, checkboxes FROM tasks")
             tasks = self.cursor.fetchall()
-            return [Task(name, description, status, start_date, due_date, eval(checkboxes)) for name, description, status, start_date, due_date, checkboxes in tasks]
+            return [Task(id, name, description, status, start_date, due_date, eval(checkboxes)) for id, name, description, status, start_date, due_date, checkboxes in tasks]
         except sqlite3.Error as e:
             print(f"Error retrieving tasks: {e}")
             return []

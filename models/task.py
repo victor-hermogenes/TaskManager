@@ -1,5 +1,6 @@
 class Task:
-    def __init__(self, name, description='', status='Pending', start_date='', due_date='', checkboxes=[]):
+    def __init__(self, id=None, name='', description='', status='Pending', start_date='', due_date='', checkboxes=[]):
+        self.id = id
         self.name = name
         self.description = description
         self.status = status
