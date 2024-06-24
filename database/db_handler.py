@@ -1,5 +1,5 @@
 import sqlite3
-from models import task
+from models.task import Task
 
 
 class DBHandler:
@@ -30,7 +30,7 @@ class DBHandler:
     def get_tasks(self):
         self.cursor.execute("SELECT name, description, status FROM tasks")
         tasks = self.cursor.fetchall()
-        return [task.Task(name, description, status) for name, description, status in tasks]
+        return [Task(name, description, status) for name, description, status in tasks]
     
 
     def close(self):

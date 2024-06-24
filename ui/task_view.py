@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QComboBox
+from PyQt5.QtGui import QIcon, QColor
+from PyQt5.QtCore import QSize, Qt
 
 
 class TaskView(QWidget):
@@ -46,10 +48,19 @@ class TaskItem(QWidget):
         self.layout = QHBoxLayout(self)
 
         self.label = QLabel(task_name, self)
-        self.delete_button = QPushButton("Delete", self)
+
+        # Status Dropdown
+        self.status_dropdown = QComboBox(self)
+        self.status_dropdown.addItems(["To do", "On Going", "Late", "Done", "Late", "Cacelled"])
+
+        # Red "X" button for deletion
+        self.delete_button = QPushButton("X", self)
+        self.delete_button.setStyleSheet("QPushButton {color: red; font-weight: bold; }")
+        self.delete_button.setFixedSize(QSize(30, 30))
         self.delete_button.clicked.connect(self.delete_task)
 
         self.layout.addWidget(self.label)
+        self.layout.addWidget(self.status_dropdown)
         self.layout.addWidget(self.delete_button)
 
         self.delete_callback = delete_callback
