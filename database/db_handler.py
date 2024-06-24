@@ -51,14 +51,3 @@ class DBHandler:
             self.connection.close()
         except sqlite3.Error as e:
             print(f"Error closing the database connection: {e}")
-        
-
-# Test the database handler
-if __name__ == "__main__":
-    db_handler = DBHandler()
-    task1 = Task(name="Test Task 1", description="Description 1", status="To do")
-    db_handler.add_task(task1)
-    tasks = db_handler.get_tasks()
-    for task in tasks:
-        print(task)
-    db_handler.close()

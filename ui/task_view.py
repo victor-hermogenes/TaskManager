@@ -1,11 +1,14 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QComboBox
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize
+from database.db_handler import DBHandler
+from models.task import Task
 
 
 class TaskView(QWidget):
     def __init__(self):
         super().__init__()
+        self.db_handler = DBHandler()   # Initialize the database handler
+
         self.layout = QVBoxLayout(self)
 
         self.task_input = QLineEdit(self)
@@ -21,16 +24,32 @@ class TaskView(QWidget):
         self.layout.addWidget(self.add_task_button)
         self.layout.addWidget(self.task_list)
 
+        self.load_tasks()
+    
+
+    def load_tasks(self):
+        tasks = self.db_handler.get_tasks()
+        for task in tasks:
+            self.add_task_to_list(task.name, task.status, add_to_db=False)
+
     
     def add_task(self):
         task_name = self.task_input.text()
         if task_name:
-            task_item_widget = TaskItem(task_name, self.remove_task)
-            task_item = QListWidgetItem(self.task_list)
-            task_item.setSizeHint(task_item_widget.sizeHint())
-            self.task_list.addItem(task_item)
-            self.task_list.setItemWidget(task_item, task_item_widget)
+            self.add_task_to_list(task_name)
             self.task_input.clear()
+
+    
+    def add_task_to_list(self, task_name, status="To do", add_to_db=True):
+        task_item_widget = TaskItem(task_name, self.remove_task, status)
+        task_item = QListWidgetItem(self.task_list)
+        task_item.setSizeHint(task_item_widget.sizeHint())
+        self.task_list.addItem(task_item)
+        self.task_list.setItemWidget(task_item, task_item_widget)
+        if add_to_db:
+            new_task = Task(name=task_name, status=task_item_widget.status_dropdown.currentText())
+            self.db_handler.add_task(new_task)
+        return task_item_widget
 
     
     def remove_task(self, task_item_widget):
@@ -43,7 +62,7 @@ class TaskView(QWidget):
 
 
 class TaskItem(QWidget):
-    def __init__(self, task_name, delete_callback):
+    def __init__(self, task_name, delete_callback, status="To do"):
         super().__init__()
         self.layout = QHBoxLayout(self)
 
@@ -51,7 +70,8 @@ class TaskItem(QWidget):
 
         # Status Dropdown
         self.status_dropdown = QComboBox(self)
-        self.status_dropdown.addItems(["To do", "On Going", "Late", "Done", "Late", "Cacelled"])
+        self.status_dropdown.addItems(["To do", "On Going", "Done", "Late", "Cancelled"])
+        self.status_dropdown.setCurrentText(status)
 
         # Red "X" button for deletion
         self.delete_button = QPushButton("X", self)

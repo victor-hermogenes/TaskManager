@@ -11,10 +11,6 @@ def main():
     # Initialize the database handler
     db_handler = DBHandler()
 
-    # Add some test tasks:
-    task1 = Task(name="Test Task 1", description="Descripton 1", status="To do")
-    db_handler.add_task(task1)
-
     # Fetch tasks and print them
     tasks = db_handler.get_tasks()
     for task in tasks:
