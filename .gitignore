@@ -1,5 +1,7 @@
-tasks.db
 taskmanagerenv
-ui/__pycache__
+auth/__pycache__
 database/__pycache__
-models/__pycache__
+tasks/__pycache__
+ui/__pycache__
+utils/__pycache__
+task_manager.db
