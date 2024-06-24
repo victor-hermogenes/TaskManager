@@ -15,7 +15,7 @@ class DBHandler:
         try:
             self.cursor.execute('''
                 CREATE TABLE IF NOT EXISTS tasks (
-                    id INTEGER PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     description TEXT,
                     status TEXT NOT NULL,
@@ -35,7 +35,7 @@ class DBHandler:
                                 (task.name, task.description, task.status, task.start_date, task.due_date, str(task.checkboxes)))
             self.connection.commit()
             task.id = self.cursor.lastrowid  # Get the last inserted row ID
-            print(f"Task '{task.name}' added successfully.")
+            print(f"Task '{task.name}' added successfully with ID {task.id}.")
         except sqlite3.Error as e:
             print(f"Error adding task: {e}")
 
@@ -48,11 +48,11 @@ class DBHandler:
         except sqlite3.Error as e:
             print(f"Error updating task: {e}")
 
-    def delete_task(self, task_name):
+    def delete_task(self, task_id):
         try:
-            self.cursor.execute("DELETE FROM tasks WHERE name = ?", (task_name,))
+            self.cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
             self.connection.commit()
-            print(f"Task '{task_name}' deleted successfully.")
+            print(f"Task with ID '{task_id}' deleted successfully.")
         except sqlite3.Error as e:
             print(f"Error deleting task: {e}")
 
@@ -60,7 +60,7 @@ class DBHandler:
         try:
             self.cursor.execute("SELECT id, name, description, status, start_date, due_date, checkboxes FROM tasks")
             tasks = self.cursor.fetchall()
-            return [Task(id, name, description, status, start_date, due_date, eval(checkboxes)) for id, name, description, status, start_date, due_date, checkboxes in tasks]
+            return [Task(id=id, name=name, description=description, status=status, start_date=start_date, due_date=due_date, checkboxes=eval(checkboxes)) for id, name, description, status, start_date, due_date, checkboxes in tasks]
         except sqlite3.Error as e:
             print(f"Error retrieving tasks: {e}")
             return []

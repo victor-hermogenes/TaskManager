@@ -72,8 +72,8 @@ class TaskView(QWidget):
             item = self.task_list.item(i)
             widget = self.task_list.itemWidget(item)
             if widget is task_item_widget:
-                task_name = widget.label.text()
-                self.db_handler.delete_task(task_name)
+                task_id = widget.task_id
+                self.db_handler.delete_task(task_id)
                 self.task_list.takeItem(i)
                 break
 

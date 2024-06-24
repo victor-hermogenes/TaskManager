@@ -22,11 +22,11 @@ class TaskEditWindow(QDialog):
 
         self.start_date_label = QLabel("Start Date:")
         self.start_date_input = QDateEdit(self)
-        self.start_date_input.setDate(QDate.currentDate())  # Set current date as default
+        self.start_date_input.setDate(QDate.currentDate())
 
         self.due_date_label = QLabel("Due Date:")
         self.due_date_input = QDateEdit(self)
-        self.due_date_input.setDate(QDate.currentDate())  # Set current date as default
+        self.due_date_input.setDate(QDate.currentDate())
 
         self.checkboxes = []
         self.add_checkbox("Checkbox 1")
@@ -66,6 +66,8 @@ class TaskEditWindow(QDialog):
         self.task.start_date = self.start_date_input.date().toString("yyyy-MM-dd")
         self.task.due_date = self.due_date_input.date().toString("yyyy-MM-dd")
         self.task.checkboxes = [(cb["checkbox"].isChecked(), cb["label"].text()) for cb in self.checkboxes]
+        print(f"Saving task with ID {self.task.id}")  # Debug print
         self.save_callback(self.task)
         self.accept()
+
 
