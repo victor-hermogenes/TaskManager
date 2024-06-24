@@ -50,6 +50,8 @@ class TaskView(QWidget):
             new_task = Task(name=task_name, status=task_item_widget.status_dropdown.currentText(), description=description, start_date=start_date, due_date=due_date, checkboxes=checkboxes)
             self.db_handler.add_task(new_task)
             task_item_widget.task_id = new_task.id  # Assign the new task ID to the widget
+        else:
+            task_item_widget.task_id = task_id  # Set the existing task ID
         return task_item_widget
 
     def update_task(self, task_item_widget):
