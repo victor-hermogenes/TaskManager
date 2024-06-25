@@ -15,7 +15,7 @@ def register_user(username, password):
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     try:
-        cursor.execute("INSERT INTO users (username, passowrd) VALUES (?, ?)", (username, hashed_password))
+        cursor.execute("INSERT INTO users (username, passoword) VALUES (?, ?)", (username, hashed_password))
         conn.commit()
     except sqlite3.IntegrityError:
         return False    # Username already exists
