@@ -1,50 +1,46 @@
+# task_manager/ui/task_card.py
+
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QCheckBox
 from PyQt5.QtCore import Qt
 
-
 class TaskCard(QWidget):
-    def __init__(self, task_id, title, description, start_date, due_date, status, checkboxes):
+    def __init__(self, task):
         super().__init__()
-        self.task_id = task_id
-        self.title = title
-        self.description = description
-        self.start_date = start_date
-        self.due_date = due_date
-        self.status = status
-        self.checkboxes = checkboxes
-
+        self.task = task
         self.initUI()
-
 
     def initUI(self):
         layout = QVBoxLayout()
 
         # Title
-        self.title_label = QLabel(self.title)
-        self.title_label.setStyleSheet("font-weight; font-size> 16px;")
+        self.title_label = QLabel(self.task[2])
+        self.title_label.setStyleSheet("font-weight: bold; font-size: 16px;")
         layout.addWidget(self.title_label)
 
         # Description
-        self.description_label = QLabel(self.description)
+        self.description_label = QLabel(self.task[3])
         self.description_label.setWordWrap(True)
         layout.addWidget(self.description_label)
 
         # Dates
         date_layout = QHBoxLayout()
-        self.start_date_label = QLabel(f"Start: {self.start_date}")
-        self.due_date_label = QLabel(f"Due: {self.due_date}")
+        self.start_date_label = QLabel(f"Start: {self.task[4]}")
+        self.due_date_label = QLabel(f"Due: {self.task[5]}")
         date_layout.addWidget(self.start_date_label)
         date_layout.addWidget(self.due_date_label)
         layout.addLayout(date_layout)
 
         # Status
-        self.status_label = QLabel(f"Status: {self.status}")
+        self.status_label = QLabel(f"Status: {self.task[6]}")
         layout.addWidget(self.status_label)
 
         # Checkboxes
-        self.checkboxes_layout = QVBoxLayout()
-        for checkbox_text in self.checkboxes:
+        self.checkbox_layout = QVBoxLayout()
+        checkboxes = self.task[7].split(',')
+        for checkbox_text in checkboxes:
             checkbox = QCheckBox(checkbox_text)
+            checkbox.setChecked(True)
+            checkbox.setDisabled(True)
             self.checkbox_layout.addWidget(checkbox)
         layout.addLayout(self.checkbox_layout)
 
@@ -55,28 +51,7 @@ class TaskCard(QWidget):
 
         self.setLayout(layout)
 
-    
     def view_details(self):
-        # Placeholder for viewing detailed task info
-        print(f"Viewing details for task: {self.task_id}")
-
-    
-if __name__ == "__main__":
-    from PyQt5.QtWidgets import QApplication
-    import sys
-    
-    app = QApplication(sys.argv)
-
-    # Sample data for testing
-    task_id = 1
-    title = "Sample Task"
-    description = "This is a description of the sample task"
-    start_date = "2024-06-24"
-    due_date = "2024-07-01"
-    status = "In Progress"
-    checkboxes = ["Subtask 1", "Subtask 2", "Subtask 3"]
-
-    task_card = TaskCard(task_id, title, description, start_date, due_date, status, checkboxes)
-    task_card.show()
-
-    sys.exit(app.exec_())
+        from tasks.task_view import TaskViewWindow
+        self.view_window = TaskViewWindow(self.task)
+        self.view_window.show()
