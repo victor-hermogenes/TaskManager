@@ -26,7 +26,7 @@ class CreateTaskWindow(QWidget):
         self.due_date_input = QDateEdit()
         self.status_label = QLabel("Status")
         self.status_input = QComboBox()
-        self.Status_input.additems(["Not Started", "In Progress", "Completed"])
+        self.status_input.additems(["Not Started", "In Progress", "Completed"])
         self.checkboxes_label = QLabel("Subtasks")
         self.checkboxes_layout = QVBoxLayout
 
