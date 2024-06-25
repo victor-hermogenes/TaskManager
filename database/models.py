@@ -16,14 +16,15 @@ def create_tables(conn):
     )''')
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS tasks(
-        id INTENGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTENGER,
+    CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
         title TEXT NOT NULL,
         description TEXT,
         start_date TEXT,
         due_date TEXT,
         status TEXT,
+        checkboxes TEXT,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )''')
     conn.commit()
