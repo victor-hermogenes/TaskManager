@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QHBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox
+from PyQt5.QtCore import QDate
 from database.models import update_task
 from utils.validators import validate_task  # Import task validator
 from utils.helpers import checkboxes_to_list, format_date  # Import helpers
@@ -19,13 +20,13 @@ class EditTaskWindow(QWidget):
         self.title_label = QLabel("Title")
         self.title_input = QLineEdit(self.task[2])
         self.description_label = QLabel("Description")
-        self.description_input = QLineEdit(self.task[3])
+        self.description_input = QTextEdit(self.task[3])
         self.start_date_label = QLabel("Start Date")
         self.start_date_input = QDateEdit()
-        self.start_date_input.setDate(self.task[4])
-        self.due_date_label = QLabel("Due date")
+        self.start_date_input.setDate(QDate.fromString(self.task[4], "yyyy-MM-dd"))  # Convert string to QDate
+        self.due_date_label = QLabel("Due Date")
         self.due_date_input = QDateEdit()
-        self.due_date_input.setDate(self.task[5])
+        self.due_date_input.setDate(QDate.fromString(self.task[5], "yyyy-MM-dd"))  # Convert string to QDate
         self.status_label = QLabel("Status")
         self.status_input = QComboBox()
         self.status_input.addItems(["Not Started", "In Progress", "Completed"])
@@ -36,6 +37,7 @@ class EditTaskWindow(QWidget):
 
         for checkbox_text in checkboxes:
             checkbox = QCheckBox(checkbox_text)
+            checkbox.setChecked(True)
             self.checkboxes_layout.addWidget(checkbox)
 
         self.add_checkbox_button = QPushButton("Add Subtask")
@@ -55,7 +57,7 @@ class EditTaskWindow(QWidget):
         layout.addWidget(self.status_label)
         layout.addWidget(self.status_input)
         layout.addWidget(self.checkboxes_label)
-        layout.addWidget(self.checkboxes_layout)
+        layout.addLayout(self.checkboxes_layout)
         layout.addWidget(self.add_checkbox_button)
         layout.addWidget(self.update_button)
 
