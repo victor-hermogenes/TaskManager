@@ -71,9 +71,17 @@ class MainWindow(QMainWindow):
     def show_create_task_window(self):
         self.create_task_window = CreateTaskWindow(self.user_id)
         self.create_task_window.show()
+        self.create_task_window.destroyed.connect(self.load_tasks)  # Refresh task list after creating a new task
 
 
     def load_tasks(self):
+        # Clear current tasks
+        for i in reversed(range(self.task_layout.count())):
+            widget = self.task_layout.itemAt(i).widget()
+            if widget is not None:
+                widget.setParent(None)
+
+        # Load tasks from the database
         tasks = get_tasks_by_user(self.user_id)
         for task in tasks:
             task_card = TaskCard(task)
