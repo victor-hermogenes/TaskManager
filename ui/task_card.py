@@ -1,5 +1,3 @@
-# task_manager/ui/task_card.py
-
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QCheckBox
 from PyQt5.QtCore import Qt
 

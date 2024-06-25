@@ -1,5 +1,3 @@
-# task_manager/ui/main_window.py
-
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QScrollArea, QMenuBar, QAction, QPushButton
 import sys
 from task_card import TaskCard
