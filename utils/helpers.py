@@ -1,6 +1,5 @@
-# task_manager/utils/helpers.py
-
 from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QCheckBox
 
 
 def format_date(date_str):
