@@ -50,4 +50,11 @@ class LoginWindow(QWidget):
         self.register_window.show()
         self.close()
 
+
+    def open_main_window(self, username):
+        from ui.main_window import MainWindow
+        self.main_window = MainWindow(username)
+        self.main_window.show()
+        self.close()
+        
 from auth.register import RegisterWindow

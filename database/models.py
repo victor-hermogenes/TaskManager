@@ -30,6 +30,15 @@ def create_tables(conn):
     conn.commit()
 
 
+def get_user_id_by_username(username):
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
+    user_id = cursor.fetchone()[0]
+    conn.close()
+    return user_id
+
+
 def create_task(user_id, title, description, start_date, due_date, status, checkboxes):
     conn = create_connection()
     cursor = conn.cursor()
@@ -53,7 +62,7 @@ def update_task(task_id, title, description, start_date, due_date, status, check
 def get_tasks_by_user(user_id):
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM tasks WHERE user_id = ?', (user_id))
+    cursor.execute('SELECT * FROM tasks WHERE user_id = ?', (user_id,))
     tasks = cursor.fetchall()
     conn.close()
     return tasks

@@ -4,15 +4,18 @@ from task_card import TaskCard
 from dark_mode import apply_dark_mode
 from light_mode import apply_light_mode
 from tasks.create_task import CreateTaskWindow
-from database.models import get_tasks_by_user
+from database.models import get_tasks_by_user, get_user_id_by_username
+
 
 class MainWindow(QMainWindow):
-    def __init__(self, user_id):
+    def __init__(self, username):
         super().__init__()
-        self.user_id = user_id
+        self.username = username
+        self.user_id = get_user_id_by_username(username)  # Fetch the user ID based on the username
         self.setWindowTitle("Task Manager")
         self.setGeometry(100, 100, 800, 600)
         self.initUI()
+
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -20,13 +23,13 @@ class MainWindow(QMainWindow):
         # Menu bar for light/dark mode
         menu_bar = self.menuBar()
         view_menu = menu_bar.addMenu("View")
-
+        
         light_mode_action = QAction("Light Mode", self)
         dark_mode_action = QAction("Dark Mode", self)
-
+        
         light_mode_action.triggered.connect(self.set_light_mode)
         dark_mode_action.triggered.connect(self.set_dark_mode)
-
+        
         view_menu.addAction(light_mode_action)
         view_menu.addAction(dark_mode_action)
 
@@ -50,15 +53,19 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())
+    
 
     def set_dark_mode(self):
         apply_dark_mode(QApplication.instance())
 
+
     def show_create_task_window(self):
         self.create_task_window = CreateTaskWindow(self.user_id)
         self.create_task_window.show()
+
 
     def load_tasks(self):
         tasks = get_tasks_by_user(self.user_id)
