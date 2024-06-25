@@ -9,7 +9,7 @@ from task_card import TaskCard
 from dark_mode import apply_dark_mode
 from light_mode import apply_light_mode
 from tasks.create_task import CreateTaskWindow
-from tasks.edit_task import EditTaskWindow  # Import EditTaskWindow
+from tasks.edit_task import EditTaskWindow
 from database.models import get_tasks_by_user, get_user_id_by_username
 
 
@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
 
     def show_create_task_window(self):
         self.create_task_window = CreateTaskWindow(self.user_id)
-        self.create_task_window.task_created.connect(self.load_tasks)  # Connect signal to refresh tasks
+        self.create_task_window.task_created.connect(self.load_tasks)
         self.create_task_window.show()
 
 
@@ -85,13 +85,14 @@ class MainWindow(QMainWindow):
         tasks = get_tasks_by_user(self.user_id)
         for task in tasks:
             task_card = TaskCard(task)
-            task_card.edit_requested.connect(self.show_edit_task_window)  # Connect edit signal
+            task_card.edit_requested.connect(self.show_edit_task_window)
             self.task_layout.addWidget(task_card)
+
 
 
     def show_edit_task_window(self, task):
         self.edit_task_window = EditTaskWindow(task)
-        self.edit_task_window.task_updated.connect(self.load_tasks)  # Refresh task list after editing a task
+        self.edit_task_window.task_updated.connect(self.load_tasks)
         self.edit_task_window.show()
 
 if __name__ == "__main__":

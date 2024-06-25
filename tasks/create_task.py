@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox
 from PyQt5.QtCore import pyqtSignal
-from database.models import create_task
-from utils.validators import validate_task  # Import task validator
-from utils.helpers import checkboxes_to_list  # Import helper
+from database.models import create_task, get_all_users
+from utils.validators import validate_task
+from utils.helpers import checkboxes_to_list
 
 
 class CreateTaskWindow(QWidget):
@@ -38,6 +38,10 @@ class CreateTaskWindow(QWidget):
         self.add_checkbox_button = QPushButton("Add Subtask")
         self.add_checkbox_button.clicked.connect(self.add_checkbox)
 
+        self.assigned_user_label = QLabel("Assign to User")
+        self.assigned_user_input = QComboBox()
+        self.load_users()
+
         self.create_button = QPushButton("Create Task")
         self.create_button.clicked.connect(self.create_task)
 
@@ -52,11 +56,19 @@ class CreateTaskWindow(QWidget):
         layout.addWidget(self.status_label)
         layout.addWidget(self.status_input)
         layout.addWidget(self.checkboxes_label)
-        layout.addLayout(self.checkboxes_layout)  # Corrected to addLayout
+        layout.addLayout(self.checkboxes_layout)
         layout.addWidget(self.add_checkbox_button)
+        layout.addWidget(self.assigned_user_label)
+        layout.addWidget(self.assigned_user_input)
         layout.addWidget(self.create_button)
 
         self.setLayout(layout)
+
+    
+    def load_users(self):
+        users = get_all_users()
+        for user_id, username in users:
+            self.assigned_user_input.addItem(username, user_id)
 
 
     def add_checkbox(self):
@@ -71,14 +83,14 @@ class CreateTaskWindow(QWidget):
         due_date = self.due_date_input.date().toString("yyyy-MM-dd")
         status = self.status_input.currentText()
         checkboxes = checkboxes_to_list(self.checkboxes_layout)
+        assigned_user_id = self.assigned_user_input.currentData()
 
         is_valid, message = validate_task(title, start_date, due_date)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
 
-        create_task(self.user_id, title, description, start_date, due_date, status, checkboxes)
-        print("Task created:", title, description, start_date, due_date, status, checkboxes)  # Debug print
-        self.task_created.emit()  # Emit the signal
+        create_task(self.user_id, assigned_user_id, title, description, start_date, due_date, status, checkboxes)
+        self.task_created.emit()
         QMessageBox.information(self, "Success", "Task created successfully")
         self.close()

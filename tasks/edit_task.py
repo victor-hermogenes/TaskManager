@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox
 from PyQt5.QtCore import QDate, pyqtSignal
-from database.models import update_task
+from database.models import update_task, get_all_users
 from utils.validators import validate_task
 from utils.helpers import checkboxes_to_list
 
@@ -25,10 +25,10 @@ class EditTaskWindow(QWidget):
         self.description_input = QTextEdit(self.task[3])
         self.start_date_label = QLabel("Start Date")
         self.start_date_input = QDateEdit()
-        self.start_date_input.setDate(QDate.fromString(self.task[4], "yyyy-MM-dd"))  # Convert string to QDate
+        self.start_date_input.setDate(QDate.fromString(self.task[4], "yyyy-MM-dd"))
         self.due_date_label = QLabel("Due Date")
         self.due_date_input = QDateEdit()
-        self.due_date_input.setDate(QDate.fromString(self.task[5], "yyyy-MM-dd"))  # Convert string to QDate
+        self.due_date_input.setDate(QDate.fromString(self.task[5], "yyyy-MM-dd"))
         self.status_label = QLabel("Status")
         self.status_input = QComboBox()
         self.status_input.addItems(["Not Started", "In Progress", "Completed"])
@@ -44,6 +44,10 @@ class EditTaskWindow(QWidget):
 
         self.add_checkbox_button = QPushButton("Add Subtask")
         self.add_checkbox_button.clicked.connect(self.add_checkbox)
+
+        self.assigned_user_label = QLabel("Assign to User")
+        self.assigned_user_input = QComboBox()
+        self.load_users()
 
         self.update_button = QPushButton("Update Task")
         self.update_button.clicked.connect(self.update_task)
@@ -61,9 +65,22 @@ class EditTaskWindow(QWidget):
         layout.addWidget(self.checkboxes_label)
         layout.addLayout(self.checkboxes_layout)
         layout.addWidget(self.add_checkbox_button)
+        layout.addWidget(self.assigned_user_label)
+        layout.addWidget(self.assigned_user_input)
         layout.addWidget(self.update_button)
 
         self.setLayout(layout)
+
+
+    def load_users(self):
+        users = get_all_users()
+        for user_id, username in users:
+            self.assigned_user_input.addItem(username, user_id)
+        # Set the current assigned user
+        assigned_user_id = self.task[1]
+        index = self.assigned_user_input.findData(assigned_user_id)
+        if index >= 0:
+            self.assigned_user_input.setCurrentIndex(index)
 
     
     def add_checkbox(self):
@@ -78,13 +95,14 @@ class EditTaskWindow(QWidget):
         due_date = self.due_date_input.date().toString("yyyy-MM-dd")
         status = self.status_input.currentText()
         checkboxes = checkboxes_to_list(self.checkboxes_layout)
+        assigned_user_id = self.assigned_user_input.currentData()
 
         is_valid, message = validate_task(title, start_date, due_date)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
 
-        update_task(self.task[0], title, description, start_date, due_date, status, checkboxes)
+        update_task(self.task[0], assigned_user_id, title, description, start_date, due_date, status, checkboxes)
+        self.task_updated.emit()
         QMessageBox.information(self, "Success", "Task updated successfully")
-        self.task_updated.emit()  # Emit the signal
         self.close()
