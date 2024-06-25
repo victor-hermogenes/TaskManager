@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 from auth.auth import register_user
+from utils.validators import validate_username, validate_password   # Import validators
 
 
 class RegisterWindow(QWidget):
@@ -44,10 +45,20 @@ class RegisterWindow(QWidget):
         password = self.password_input.text()
         confirm_password = self.confirm_input.text()
 
+        is_valid, message = validate_username(username)
+        if not is_valid:
+            QMessageBox.warning(self, "Error", message)
+            return
+        
+        is_valid, message = validate_password(password)
+        if not is_valid:
+            QMessageBox.warning(self, "Error", message)
+            return
+
         if password != confirm_password:
             QMessageBox.warning(self, "Error", "Passwords do not match")
             return
-        
+
         if register_user(username, password):
             QMessageBox.information(self, "Success", "Registration successful")
             self.show_login()

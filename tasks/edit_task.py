@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QHBoxLayout, QMessageBox
-from database.models import update_task, get_tasks_by_user
+from database.models import update_task
+from utils.validators import validate_task  # Import task validator
+from utils.helpers import checkboxes_to_list, format_date  # Import helpers
 
 
 class EditTaskWindow(QWidget):
@@ -71,7 +73,12 @@ class EditTaskWindow(QWidget):
         start_date = self.start_date_input.date().toString("yyyy-MM-dd")
         due_date = self.due_date_input.date().toString("yyyy-MM-dd")
         status = self.status_input.currentText()
-        checkboxes = [self.checkboxes_layout.itemAt(i).widget().text() for i in range(self.checkboxes_layout.count())]
+        checkboxes = checkboxes_to_list(self.checkboxes_layout)
+
+        is_valid, message = validate_task(title, start_date, due_date)
+        if not is_valid:
+            QMessageBox.warning(self, "Error", message)
+            return
 
         update_task(self.task[0], title, description, start_date, due_date, status, checkboxes)
         QMessageBox.information(self, "Success", "Task updated successfully")
