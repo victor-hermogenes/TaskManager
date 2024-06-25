@@ -48,7 +48,7 @@ def create_task(user_id, title, description, start_date, due_date, status, check
     conn.commit()
     conn.close()
 
-    
+
 def update_task(task_id, title, description, start_date, due_date, status, checkboxes):
     conn = create_connection()
     cursor = conn.cursor()
@@ -58,7 +58,7 @@ def update_task(task_id, title, description, start_date, due_date, status, check
     conn.commit()
     conn.close()
 
-    
+
 def get_tasks_by_user(user_id):
     conn = create_connection()
     cursor = conn.cursor()
@@ -66,8 +66,3 @@ def get_tasks_by_user(user_id):
     tasks = cursor.fetchall()
     conn.close()
     return tasks
-
-if __name__ == "__main__":
-    conn = create_connection()
-    create_tables(conn)
-

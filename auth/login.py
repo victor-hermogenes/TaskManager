@@ -9,7 +9,7 @@ class LoginWindow(QWidget):
         self.setGeometry(100, 100, 300, 200)
         self.initUI()
 
-    
+
     def initUI(self):
         layout = QVBoxLayout()
 
@@ -33,18 +33,18 @@ class LoginWindow(QWidget):
 
         self.setLayout(layout)
 
-    
+
     def login(self):
         username = self.username_input.text()
         password = self.password_input.text()
 
         if login_user(username, password):
             QMessageBox.information(self, "Success", "Login successful")
-            self.close()  # Proceed to the main window
+            self.open_main_window(username)  # Proceed to the main window
         else:
             QMessageBox.warning(self, "Error", "Invalid username or password")
 
-        
+
     def show_register(self):
         self.register_window = RegisterWindow()
         self.register_window.show()
@@ -56,5 +56,5 @@ class LoginWindow(QWidget):
         self.main_window = MainWindow(username)
         self.main_window.show()
         self.close()
-        
+
 from auth.register import RegisterWindow
