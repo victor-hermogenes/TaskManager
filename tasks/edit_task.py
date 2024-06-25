@@ -1,11 +1,13 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox
-from PyQt5.QtCore import QDate
+from PyQt5.QtCore import QDate, pyqtSignal
 from database.models import update_task
-from utils.validators import validate_task  # Import task validator
-from utils.helpers import checkboxes_to_list, format_date  # Import helpers
+from utils.validators import validate_task
+from utils.helpers import checkboxes_to_list
 
 
 class EditTaskWindow(QWidget):
+    task_updated = pyqtSignal()  # Signal to indicate task update
+
     def __init__(self, task):
         super().__init__()
         self.task = task
@@ -84,4 +86,5 @@ class EditTaskWindow(QWidget):
 
         update_task(self.task[0], title, description, start_date, due_date, status, checkboxes)
         QMessageBox.information(self, "Success", "Task updated successfully")
+        self.task_updated.emit()  # Emit the signal
         self.close()

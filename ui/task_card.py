@@ -1,11 +1,14 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton, QCheckBox
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
 
 class TaskCard(QWidget):
+    edit_requested = pyqtSignal(tuple)  # Signal to request task editing
+
     def __init__(self, task):
         super().__init__()
         self.task = task
         self.initUI()
+
 
     def initUI(self):
         layout = QVBoxLayout()
@@ -42,12 +45,17 @@ class TaskCard(QWidget):
             self.checkbox_layout.addWidget(checkbox)
         layout.addLayout(self.checkbox_layout)
 
-        # View Details Button
-        self.view_button = QPushButton("View Details")
-        self.view_button.clicked.connect(self.view_details)
-        layout.addWidget(self.view_button)
+        # Edit Button
+        self.edit_button = QPushButton("Edit")
+        self.edit_button.clicked.connect(self.request_edit)
+        layout.addWidget(self.edit_button)
 
         self.setLayout(layout)
+
+
+    def request_edit(self):
+        self.edit_requested.emit(self.task)
+
 
     def view_details(self):
         from tasks.task_view import TaskViewWindow

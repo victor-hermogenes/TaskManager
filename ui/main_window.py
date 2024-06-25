@@ -5,11 +5,11 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QScrollArea, QMenuBar, QAction, QPushButton
-import sys
 from task_card import TaskCard
 from dark_mode import apply_dark_mode
 from light_mode import apply_light_mode
 from tasks.create_task import CreateTaskWindow
+from tasks.edit_task import EditTaskWindow  # Import EditTaskWindow
 from database.models import get_tasks_by_user, get_user_id_by_username
 
 
@@ -85,7 +85,14 @@ class MainWindow(QMainWindow):
         tasks = get_tasks_by_user(self.user_id)
         for task in tasks:
             task_card = TaskCard(task)
+            task_card.edit_requested.connect(self.show_edit_task_window)  # Connect edit signal
             self.task_layout.addWidget(task_card)
+
+
+    def show_edit_task_window(self, task):
+        self.edit_task_window = EditTaskWindow(task)
+        self.edit_task_window.task_updated.connect(self.load_tasks)  # Refresh task list after editing a task
+        self.edit_task_window.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
