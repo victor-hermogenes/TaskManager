@@ -9,7 +9,7 @@ def create_connection():
 def create_tables(conn):
     cursor = conn.cursor()
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTIS users (
+    CREATE TABLE IF NOT EXISTS users (
         id INTENGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
