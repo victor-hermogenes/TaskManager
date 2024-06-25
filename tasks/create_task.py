@@ -1,10 +1,13 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox
+from PyQt5.QtCore import pyqtSignal
 from database.models import create_task
 from utils.validators import validate_task  # Import task validator
 from utils.helpers import checkboxes_to_list  # Import helper
 
 
 class CreateTaskWindow(QWidget):
+    task_created = pyqtSignal()  # Signal to indicate task creation
+
     def __init__(self, user_id):
         super().__init__()
         self.user_id = user_id
@@ -75,5 +78,7 @@ class CreateTaskWindow(QWidget):
             return
 
         create_task(self.user_id, title, description, start_date, due_date, status, checkboxes)
+        print("Task created:", title, description, start_date, due_date, status, checkboxes)  # Debug print
+        self.task_created.emit()  # Emit the signal
         QMessageBox.information(self, "Success", "Task created successfully")
         self.close()

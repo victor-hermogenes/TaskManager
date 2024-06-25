@@ -70,8 +70,8 @@ class MainWindow(QMainWindow):
 
     def show_create_task_window(self):
         self.create_task_window = CreateTaskWindow(self.user_id)
+        self.create_task_window.task_created.connect(self.load_tasks)  # Connect signal to refresh tasks
         self.create_task_window.show()
-        self.create_task_window.destroyed.connect(self.load_tasks)  # Refresh task list after creating a new task
 
 
     def load_tasks(self):
