@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
     def __init__(self, username):
         super().__init__()
         self.username = username
-        self.user_id = get_user_id_by_username(username)  # Fetch the user ID based on the username
+        self.user_id = get_user_id_by_username(username)
         self.setWindowTitle("Task Manager")
         self.setGeometry(100, 100, 800, 600)
         self.initUI()
@@ -26,7 +26,6 @@ class MainWindow(QMainWindow):
     def initUI(self):
         layout = QVBoxLayout()
 
-        # Menu bar for light/dark mode
         menu_bar = self.menuBar()
         view_menu = menu_bar.addMenu("View")
         
@@ -39,12 +38,10 @@ class MainWindow(QMainWindow):
         view_menu.addAction(light_mode_action)
         view_menu.addAction(dark_mode_action)
 
-        # Add Task Button
         self.add_task_button = QPushButton("Add Task")
         self.add_task_button.clicked.connect(self.show_create_task_window)
         layout.addWidget(self.add_task_button)
 
-        # Scroll area for tasks
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         self.task_container = QWidget()
@@ -75,13 +72,11 @@ class MainWindow(QMainWindow):
 
 
     def load_tasks(self):
-        # Clear current tasks
         for i in reversed(range(self.task_layout.count())):
             widget = self.task_layout.itemAt(i).widget()
             if widget is not None:
                 widget.setParent(None)
 
-        # Load tasks from the database
         tasks = get_tasks_by_user(self.user_id)
         for task in tasks:
             task_card = TaskCard(task)

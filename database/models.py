@@ -138,8 +138,10 @@ def get_tasks_by_user(user_id):
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute('''
-    SELECT tasks.* FROM tasks
+    SELECT tasks.*, GROUP_CONCAT(users.username) as assignees
+    FROM tasks
     LEFT JOIN task_assignees ON tasks.id = task_assignees.task_id
+    LEFT JOIN users ON task_assignees.user_id = users.id
     WHERE tasks.user_id = ? OR task_assignees.user_id = ?
     GROUP BY tasks.id
     ''', (user_id, user_id))
