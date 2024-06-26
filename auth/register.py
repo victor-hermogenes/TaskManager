@@ -1,16 +1,16 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QComboBox
 from auth.auth import register_user
 from utils.validators import validate_username, validate_password   # Import validators
 
 
 class RegisterWindow(QWidget):
-    def __init__(self):
+    def __init__(self, login_window):
         super().__init__()
+        self.login_window = login_window
         self.setWindowTitle("Register")
         self.setGeometry(100, 100, 300, 200)
         self.initUI()
 
-    
     def initUI(self):
         layout = QVBoxLayout()
 
@@ -22,6 +22,9 @@ class RegisterWindow(QWidget):
         self.confirm_label = QLabel("Confirm Password")
         self.confirm_input = QLineEdit()
         self.confirm_input.setEchoMode(QLineEdit.Password)
+        self.role_label = QLabel("Role")
+        self.role_input = QComboBox()
+        self.role_input.addItems(["user", "admin"])
         self.register_button = QPushButton("Register")
         self.back_button = QPushButton("Back to Login")
 
@@ -34,22 +37,24 @@ class RegisterWindow(QWidget):
         layout.addWidget(self.password_input)
         layout.addWidget(self.confirm_label)
         layout.addWidget(self.confirm_input)
+        layout.addWidget(self.role_label)
+        layout.addWidget(self.role_input)
         layout.addWidget(self.register_button)
         layout.addWidget(self.back_button)
 
         self.setLayout(layout)
 
-    
     def register(self):
         username = self.username_input.text()
         password = self.password_input.text()
         confirm_password = self.confirm_input.text()
+        role = self.role_input.currentText()
 
         is_valid, message = validate_username(username)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
-        
+
         is_valid, message = validate_password(password)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
@@ -59,15 +64,13 @@ class RegisterWindow(QWidget):
             QMessageBox.warning(self, "Error", "Passwords do not match")
             return
 
-        if register_user(username, password):
+        if register_user(username, password, role):
             QMessageBox.information(self, "Success", "Registration successful")
             self.show_login()
         else:
             QMessageBox.warning(self, "Error", "Username already exists")
-        
 
     def show_login(self):
-        self.login_window = LoginWindow()
         self.login_window.show()
         self.close()
     

@@ -4,15 +4,17 @@ import os
 # Ensure the directory containing the 'task_card' module is in the system path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 from auth.auth import login_user
 
 
-class LoginWindow(QWidget):
+class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Login")
         self.setGeometry(100, 100, 300, 200)
+        self.username = ""
+        self.role = ""
         self.initUI()
 
 
@@ -44,17 +46,24 @@ class LoginWindow(QWidget):
         username = self.username_input.text()
         password = self.password_input.text()
 
-        if login_user(username, password):
+        success, role = login_user(username, password)
+        if success:
             QMessageBox.information(self, "Success", "Login successful")
-            self.open_main_window(username)  # Proceed to the main window
+            self.username = username
+            self.role = role
+            self.accept()  # Close the login dialog and proceed
         else:
             QMessageBox.warning(self, "Error", "Invalid username or password")
 
 
     def show_register(self):
-        self.register_window = RegisterWindow()
+        self.register_window = RegisterWindow(self)
         self.register_window.show()
-        self.close()
+        self.hide()
+
+
+    def get_user_info(self):
+        return self.username, self.role
 
 
     def open_main_window(self, username):

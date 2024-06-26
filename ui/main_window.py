@@ -11,6 +11,7 @@ from light_mode import apply_light_mode
 from tasks.create_task import CreateTaskWindow
 from tasks.edit_task import EditTaskWindow
 from database.models import get_tasks_by_user, get_user_id_by_username
+from auth.auth import get_db_connection
 
 
 class MainWindow(QMainWindow):
@@ -18,9 +19,19 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.username = username
         self.user_id = get_user_id_by_username(username)
+        self.role = self.get_user_role()  # Fetch the user role
         self.setWindowTitle("Task Manager")
         self.setGeometry(100, 100, 800, 600)
         self.initUI()
+
+    
+    def get_user_role(self):
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT role FROM users WHERE username = ?", (self.username,))
+        role = cursor.fetchone()[0]
+        conn.close()
+        return role
 
 
     def initUI(self):
@@ -38,9 +49,10 @@ class MainWindow(QMainWindow):
         view_menu.addAction(light_mode_action)
         view_menu.addAction(dark_mode_action)
 
-        self.add_task_button = QPushButton("Add Task")
-        self.add_task_button.clicked.connect(self.show_create_task_window)
-        layout.addWidget(self.add_task_button)
+        if self.role == 'admin':
+            self.add_task_button = QPushButton("Add Task")
+            self.add_task_button.clicked.connect(self.show_create_task_window)
+            layout.addWidget(self.add_task_button)
 
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
@@ -59,7 +71,7 @@ class MainWindow(QMainWindow):
 
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())
-    
+
 
     def set_dark_mode(self):
         apply_dark_mode(QApplication.instance())
