@@ -13,10 +13,9 @@ def create_tables(conn):
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL DEFAULT 'user'  -- New column for role
+        password TEXT NOT NULL
     )''')
-    # Other table creation statements remain unchanged
+
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,6 +28,7 @@ def create_tables(conn):
         checkboxes TEXT,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )''')
+
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS task_assignees (
         task_id INTEGER,
@@ -52,13 +52,10 @@ def seed_database():
     conn = create_connection()
     cursor = conn.cursor()
 
-    # Add some initial users with roles
-    cursor.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)", 
-                   ('admin', bcrypt.hashpw('admin'.encode('utf-8'), bcrypt.gensalt()), 'admin'))
-    cursor.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)", 
-                   ('user1', bcrypt.hashpw('password1'.encode('utf-8'), bcrypt.gensalt()), 'user'))
-    cursor.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)", 
-                   ('user2', bcrypt.hashpw('password2'.encode('utf-8'), bcrypt.gensalt()), 'user'))
+    # Add some initial users
+    cursor.execute("INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)", ('admin', bcrypt.hashpw('admin'.encode('utf-8'), bcrypt.gensalt())))
+    cursor.execute("INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)", ('user1', bcrypt.hashpw('password1'.encode('utf-8'), bcrypt.gensalt())))
+    cursor.execute("INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)", ('user2', bcrypt.hashpw('password2'.encode('utf-8'), bcrypt.gensalt())))
 
     # Add some initial tasks
     cursor.execute('''

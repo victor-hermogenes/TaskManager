@@ -7,7 +7,7 @@ def get_db_connection():
     return conn
 
 
-def register_user(username, password, role='user'):
+def register_user(username, password):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -15,8 +15,7 @@ def register_user(username, password, role='user'):
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     try:
-        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", 
-                       (username, hashed_password, role))
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
         conn.commit()
     except sqlite3.IntegrityError:
         return False    # Username already exists
@@ -29,15 +28,12 @@ def login_user(username, password):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT password, role FROM users WHERE username = ?", (username,))
+    cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
     conn.close()
 
     if result is None:
-        return False, None    # User not found
+        return False    # User not found
     
-    stored_password, role = result
-    if bcrypt.checkpw(password.encode('utf-8'), stored_password):
-        return True, role
-    else:
-        return False, None
+    stored_password = result[0]
+    return bcrypt.checkpw(password.encode('utf-8'), stored_password)

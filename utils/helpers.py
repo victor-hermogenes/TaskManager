@@ -16,4 +16,3 @@ def checkboxes_to_list(checkboxes_layout):
         if isinstance(widget, QCheckBox):
             checkboxes.append(widget.text())
     return checkboxes
-
