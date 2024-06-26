@@ -1,12 +1,14 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QComboBox
+from PyQt5.QtCore import pyqtSignal
 from auth.auth import register_user
-from utils.validators import validate_username, validate_password   # Import validators
+from utils.validators import validate_username, validate_password
 
 
 class RegisterWindow(QWidget):
-    def __init__(self, login_window):
+    show_login_window = pyqtSignal()
+
+    def __init__(self):
         super().__init__()
-        self.login_window = login_window
         self.setWindowTitle("Register")
         self.setGeometry(100, 100, 300, 200)
         self.initUI()
@@ -71,7 +73,5 @@ class RegisterWindow(QWidget):
             QMessageBox.warning(self, "Error", "Username already exists")
 
     def show_login(self):
-        self.login_window.show()
+        self.show_login_window.emit()
         self.close()
-    
-from auth.login import LoginWindow
