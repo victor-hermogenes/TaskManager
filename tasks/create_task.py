@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox, QListWidget, QListWidgetItem
+from PyQt5.QtCore import pyqtSignal, Qt
 from database.models import create_task, get_all_users
 from utils.validators import validate_task
 from utils.helpers import checkboxes_to_list
@@ -38,8 +38,9 @@ class CreateTaskWindow(QWidget):
         self.add_checkbox_button = QPushButton("Add Subtask")
         self.add_checkbox_button.clicked.connect(self.add_checkbox)
 
-        self.assigned_user_label = QLabel("Assign to User")
-        self.assigned_user_input = QComboBox()
+        self.assigned_users_label = QLabel("Assign to Users")
+        self.assigned_users_list = QListWidget()
+        self.assigned_users_list.setSelectionMode(QListWidget.MultiSelection)
         self.load_users()
 
         self.create_button = QPushButton("Create Task")
@@ -58,8 +59,8 @@ class CreateTaskWindow(QWidget):
         layout.addWidget(self.checkboxes_label)
         layout.addLayout(self.checkboxes_layout)
         layout.addWidget(self.add_checkbox_button)
-        layout.addWidget(self.assigned_user_label)
-        layout.addWidget(self.assigned_user_input)
+        layout.addWidget(self.assigned_users_label)
+        layout.addWidget(self.assigned_users_list)
         layout.addWidget(self.create_button)
 
         self.setLayout(layout)
@@ -68,7 +69,9 @@ class CreateTaskWindow(QWidget):
     def load_users(self):
         users = get_all_users()
         for user_id, username in users:
-            self.assigned_user_input.addItem(username, user_id)
+            item = QListWidgetItem(username)
+            item.setData(Qt.UserRole, user_id)
+            self.assigned_users_list.addItem(item)
 
 
     def add_checkbox(self):
@@ -83,14 +86,14 @@ class CreateTaskWindow(QWidget):
         due_date = self.due_date_input.date().toString("yyyy-MM-dd")
         status = self.status_input.currentText()
         checkboxes = checkboxes_to_list(self.checkboxes_layout)
-        assigned_user_id = self.assigned_user_input.currentData()
+        assignees = [item.data(Qt.UserRole) for item in self.assigned_users_list.selectedItems()]
 
         is_valid, message = validate_task(title, start_date, due_date)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
 
-        create_task(self.user_id, assigned_user_id, title, description, start_date, due_date, status, checkboxes)
+        create_task(self.user_id, title, description, start_date, due_date, status, checkboxes, assignees)
         self.task_created.emit()
         QMessageBox.information(self, "Success", "Task created successfully")
         self.close()

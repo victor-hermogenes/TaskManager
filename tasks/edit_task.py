@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox
-from PyQt5.QtCore import QDate, pyqtSignal
-from database.models import update_task, get_all_users
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox, QListWidget, QListWidgetItem
+from PyQt5.QtCore import QDate, pyqtSignal, Qt
+from database.models import update_task, get_all_users, get_assignees_by_task
 from utils.validators import validate_task
 from utils.helpers import checkboxes_to_list
 
@@ -12,7 +12,7 @@ class EditTaskWindow(QWidget):
         super().__init__()
         self.task = task
         self.setWindowTitle("Edit Task")
-        self.setGeometry(100, 100, 400, 400)
+        self.setGeometry(100, 100, 400, 600)
         self.initUI()
 
 
@@ -45,8 +45,9 @@ class EditTaskWindow(QWidget):
         self.add_checkbox_button = QPushButton("Add Subtask")
         self.add_checkbox_button.clicked.connect(self.add_checkbox)
 
-        self.assigned_user_label = QLabel("Assign to User")
-        self.assigned_user_input = QComboBox()
+        self.assigned_users_label = QLabel("Assign to Users")
+        self.assigned_users_list = QListWidget()
+        self.assigned_users_list.setSelectionMode(QListWidget.MultiSelection)
         self.load_users()
 
         self.update_button = QPushButton("Update Task")
@@ -65,8 +66,8 @@ class EditTaskWindow(QWidget):
         layout.addWidget(self.checkboxes_label)
         layout.addLayout(self.checkboxes_layout)
         layout.addWidget(self.add_checkbox_button)
-        layout.addWidget(self.assigned_user_label)
-        layout.addWidget(self.assigned_user_input)
+        layout.addWidget(self.assigned_users_label)
+        layout.addWidget(self.assigned_users_list)
         layout.addWidget(self.update_button)
 
         self.setLayout(layout)
@@ -75,12 +76,17 @@ class EditTaskWindow(QWidget):
     def load_users(self):
         users = get_all_users()
         for user_id, username in users:
-            self.assigned_user_input.addItem(username, user_id)
-        # Set the current assigned user
-        assigned_user_id = self.task[1]
-        index = self.assigned_user_input.findData(assigned_user_id)
-        if index >= 0:
-            self.assigned_user_input.setCurrentIndex(index)
+            item = QListWidgetItem(username)
+            item.setData(Qt.UserRole, user_id)
+            self.assigned_users_list.addItem(item)
+
+        current_assignees = get_assignees_by_task(self.task[0])
+        for user_id, username in current_assignees:
+            items = self.assigned_users_list.findItems(username, Qt.MatchExactly)
+            if items:
+                item = items[0]
+                item.setSelected(True)
+
 
     
     def add_checkbox(self):
@@ -95,14 +101,14 @@ class EditTaskWindow(QWidget):
         due_date = self.due_date_input.date().toString("yyyy-MM-dd")
         status = self.status_input.currentText()
         checkboxes = checkboxes_to_list(self.checkboxes_layout)
-        assigned_user_id = self.assigned_user_input.currentData()
+        assignees = [item.data(Qt.UserRole) for item in self.assigned_users_list.selectedItems()]
 
         is_valid, message = validate_task(title, start_date, due_date)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
 
-        update_task(self.task[0], assigned_user_id, title, description, start_date, due_date, status, checkboxes)
+        update_task(self.task[0], title, description, start_date, due_date, status, checkboxes, assignees)
         self.task_updated.emit()
         QMessageBox.information(self, "Success", "Task updated successfully")
         self.close()

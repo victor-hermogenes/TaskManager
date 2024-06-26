@@ -1,9 +1,11 @@
 import sqlite3
 import bcrypt
 
+
 def create_connection():
     conn = sqlite3.connect('task_manager.db')
     return conn
+
 
 def create_tables(conn):
     cursor = conn.cursor()
@@ -38,11 +40,13 @@ def create_tables(conn):
 
     conn.commit()
 
+
 def initialize_database():
     conn = create_connection()
     create_tables(conn)
     conn.close()
     print("Database initialized successfully.")
+
 
 def seed_database():
     conn = create_connection()
@@ -77,6 +81,7 @@ def seed_database():
     conn.close()
     print("Database seeded successfully.")
 
+
 def get_user_id_by_username(username):
     conn = create_connection()
     cursor = conn.cursor()
@@ -85,6 +90,7 @@ def get_user_id_by_username(username):
     conn.close()
     return user_id
 
+
 def get_all_users():
     conn = create_connection()
     cursor = conn.cursor()
@@ -92,6 +98,7 @@ def get_all_users():
     users = cursor.fetchall()
     conn.close()
     return users
+
 
 def create_task(user_id, title, description, start_date, due_date, status, checkboxes, assignees):
     conn = create_connection()
@@ -109,6 +116,7 @@ def create_task(user_id, title, description, start_date, due_date, status, check
     conn.commit()
     conn.close()
 
+
 def update_task(task_id, title, description, start_date, due_date, status, checkboxes, assignees):
     conn = create_connection()
     cursor = conn.cursor()
@@ -125,6 +133,7 @@ def update_task(task_id, title, description, start_date, due_date, status, check
     conn.commit()
     conn.close()
 
+
 def get_tasks_by_user(user_id):
     conn = create_connection()
     cursor = conn.cursor()
@@ -137,6 +146,7 @@ def get_tasks_by_user(user_id):
     tasks = cursor.fetchall()
     conn.close()
     return tasks
+
 
 def get_assignees_by_task(task_id):
     conn = create_connection()

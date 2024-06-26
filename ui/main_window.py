@@ -89,7 +89,6 @@ class MainWindow(QMainWindow):
             self.task_layout.addWidget(task_card)
 
 
-
     def show_edit_task_window(self, task):
         self.edit_task_window = EditTaskWindow(task)
         self.edit_task_window.task_updated.connect(self.load_tasks)
@@ -97,7 +96,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    user_id = 1  # Placeholder for logged in user
-    window = MainWindow(user_id)
+    window = MainWindow('admin')  # Replace with actual username if needed
     window.show()
     sys.exit(app.exec_())
