@@ -66,6 +66,7 @@ class LoginWindow(QWidget):
         if login_user(username, password):
             QMessageBox.information(self, "Success", "Login successful")
             self.login_successful.emit(username)  # Emit the signal with the username
+            self.open_main_window(username) # Proceed to the main window
             self.close()
         else:
             QMessageBox.warning(self, "Error", "Invalid username or password")
@@ -83,5 +84,12 @@ class LoginWindow(QWidget):
 
     def set_dark_mode(self):
         apply_dark_mode(QApplication.instance())
+
+    
+    def open_main_window(self, username):
+        from ui.main_window import MainWindow
+        self.main_window = MainWindow(username)
+        self.main_window.show()
+        self.close()
 
 from auth.register import RegisterWindow

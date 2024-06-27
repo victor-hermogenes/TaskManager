@@ -19,9 +19,16 @@ def register_user(username, password):
         conn.commit()
     except sqlite3.IntegrityError:
         return False    # Username already exists
-    finally:
-        conn.close()
-    return True
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result is None:
+        return False    # User not found
 
 
 def login_user(username, password):
