@@ -50,12 +50,13 @@ class MainWindow(QMainWindow):
         self.scroll.setWidget(self.task_container)
         layout.addWidget(self.scroll)
 
-        self.load_tasks()
+        layout.setStretch(1, 1)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        self.load_tasks()
 
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())
