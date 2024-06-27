@@ -4,7 +4,7 @@ import os
 # Ensure the directory containing the 'task_card' module is in the system path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QScrollArea, QMenuBar, QAction, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QScrollArea, QMenuBar, QAction, QPushButton, QScrollBar
 from task_card import TaskCard
 from dark_mode import apply_dark_mode
 from light_mode import apply_light_mode
@@ -13,6 +13,8 @@ from tasks.edit_task import EditTaskWindow
 from database.models import get_tasks_by_user, get_user_id_by_username
 
 CONFIG_FILE = 'config.txt'
+
+TASKS_BATCH_SIZE = 10
 
 
 def save_style_preference(style):
@@ -27,6 +29,8 @@ class MainWindow(QMainWindow):
         self.user_id = get_user_id_by_username(username)
         self.setWindowTitle("Task Manager")
         self.setGeometry(100, 100, 800, 600)
+        self.tasks_offset = 0
+        self.tasks_loaded = False
         self.initUI()
 
 
@@ -55,6 +59,8 @@ class MainWindow(QMainWindow):
         self.task_layout = QVBoxLayout()
         self.task_container.setLayout(self.task_layout)
         self.scroll.setWidget(self.task_container)
+        self.scroll.verticalScrollBar().valueChanged.connect(self.on_scroll)
+
         layout.addWidget(self.scroll)
 
         layout.setStretch(1, 1)
@@ -82,22 +88,40 @@ class MainWindow(QMainWindow):
 
 
     def load_tasks(self):
+        tasks = get_tasks_by_user(self.user_id, self.tasks_offset, TASKS_BATCH_SIZE)
+        if tasks:
+            self.tasks_offset += len(tasks)
+            for task in tasks:
+                task_card = TaskCard(task)
+                task_card.edit_requested.connect(self.show_edit_task_window)
+                self.task_layout.addWidget(task_card)
+        else:
+            self.tasks_loaded = True
+
+    
+    def reload_tasks(self):
+        self.tasks_offset = 0
+        self.tasks_loaded = False
+        self.clear_tasks()
+        self.load_tasks()
+
+    
+    def clear_tasks(self):
         for i in reversed(range(self.task_layout.count())):
             widget = self.task_layout.itemAt(i).widget()
             if widget is not None:
                 widget.setParent(None)
-
-        tasks = get_tasks_by_user(self.user_id)
-        for task in tasks:
-            task_card = TaskCard(task)
-            task_card.edit_requested.connect(self.show_edit_task_window)
-            self.task_layout.addWidget(task_card)
 
 
     def show_edit_task_window(self, task):
         self.edit_task_window = EditTaskWindow(task)
         self.edit_task_window.task_updated.connect(self.load_tasks)
         self.edit_task_window.show()
+
+    
+    def on_scroll(self):
+        if not self.tasks_loaded and self.scroll.verticalScrollBar().value() >= self.scroll.verticalScrollBar().maximum() - 50:
+            self.load_tasks()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
