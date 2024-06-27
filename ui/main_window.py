@@ -12,6 +12,13 @@ from tasks.create_task import CreateTaskWindow
 from tasks.edit_task import EditTaskWindow
 from database.models import get_tasks_by_user, get_user_id_by_username
 
+CONFIG_FILE = 'config.txt'
+
+
+def save_style_preference(style):
+    with open(CONFIG_FILE, 'w') as f:
+        f.write(style)
+
 
 class MainWindow(QMainWindow):
     def __init__(self, username):
@@ -50,19 +57,22 @@ class MainWindow(QMainWindow):
         self.scroll.setWidget(self.task_container)
         layout.addWidget(self.scroll)
 
-        self.load_tasks()
+        layout.setStretch(1, 1)
 
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        self.load_tasks()
 
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())
+        save_style_preference('light')
     
 
     def set_dark_mode(self):
         apply_dark_mode(QApplication.instance())
+        save_style_preference('dark')
 
 
     def show_create_task_window(self):

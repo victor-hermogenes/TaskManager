@@ -10,11 +10,18 @@ from auth.auth import login_user
 from ui.dark_mode import apply_dark_mode
 from ui.light_mode import apply_light_mode
 
+CONFIG_FILE = 'config.txt'
+
+
+def save_style_preference(style):
+    with open(CONFIG_FILE, 'w') as f:
+        f.write(style)
+
 
 class LoginWindow(QWidget):
     login_successful = pyqtSignal(str)  # Signal to indicate successful login with username
 
-    
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Login")
@@ -82,10 +89,12 @@ class LoginWindow(QWidget):
 
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())
+        save_style_preference('light')
 
 
     def set_dark_mode(self):
         apply_dark_mode(QApplication.instance())
+        save_style_preference('dark')
 
     
     def open_main_window(self, username):

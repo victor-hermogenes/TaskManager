@@ -5,6 +5,13 @@ from utils.password_strengh import evaluate_password_strength    # Import passwo
 from ui.dark_mode import apply_dark_mode
 from ui.light_mode import apply_light_mode
 
+CONFIG_FILE = 'config.txt'
+
+
+def save_style_preference(style):
+    with open(CONFIG_FILE, 'w') as f:
+        f.write(style)
+
 
 class RegisterWindow(QWidget):
     def __init__(self):
@@ -66,7 +73,7 @@ class RegisterWindow(QWidget):
         username = self.username_input.text()
 
         from auth.auth import is_username_available
-        
+
         if not is_username_available(username):
             self.username_input.setStyleSheet("border: 1px solid red;")
         else:
@@ -112,9 +119,11 @@ class RegisterWindow(QWidget):
 
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())
+        save_style_preference('light')
     
 
     def set_dark_mode(self):
         apply_dark_mode(QApplication.instance())
+        save_style_preference('dark')
     
 from auth.login import LoginWindow
