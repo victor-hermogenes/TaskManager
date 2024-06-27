@@ -1,6 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication, QMenuBar, QAction
 from auth.auth import register_user
 from utils.validators import validate_username, validate_password   # Import validators
+from ui.dark_mode import apply_dark_mode
+from ui.light_mode import apply_light_mode
 
 
 class RegisterWindow(QWidget):
@@ -13,6 +15,21 @@ class RegisterWindow(QWidget):
     
     def initUI(self):
         layout = QVBoxLayout()
+
+        menu_bar = QMenuBar(self)
+
+        view_menu = menu_bar.addMenu("View")
+        
+        light_mode_action = QAction("Light Mode", self)
+        dark_mode_action = QAction("Dark Mode", self)
+
+        light_mode_action.triggered.connect(self.set_light_mode)
+        dark_mode_action.triggered.connect(self.set_dark_mode)
+
+        view_menu.addAction(light_mode_action)
+        view_menu.addAction(dark_mode_action)
+
+        layout.setMenuBar(menu_bar)
 
         self.username_label = QLabel("Username")
         self.username_input = QLineEdit()
@@ -70,5 +87,12 @@ class RegisterWindow(QWidget):
         self.login_window = LoginWindow()
         self.login_window.show()
         self.close()
+
+    def set_light_mode(self):
+        apply_light_mode(QApplication.instance())
+    
+
+    def set_dark_mode(self):
+        apply_dark_mode(QApplication.instance())
     
 from auth.login import LoginWindow
