@@ -34,7 +34,7 @@ def login_user(username, password):
     conn.close()
 
     if result is None:
-        return False    # User not found
+        return False  # User not found
     
     stored_password = result[0]
     return bcrypt.checkpw(password.encode('utf-8'), stored_password)
