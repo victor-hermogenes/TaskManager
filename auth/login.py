@@ -4,11 +4,15 @@ import os
 # Ensure the directory containing the 'task_card' module is in the system path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QMenuBar, QAction, QApplication
+from PyQt5.QtCore import pyqtSignal
 from auth.auth import login_user
+from ui.dark_mode import apply_dark_mode
+from ui.light_mode import apply_light_mode
 
 
-class LoginWindow(QDialog):
+class LoginWindow(QWidget):
+    login_successful = pyqtSignal(str)  # Signal to indicate successful login with username
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Login")
@@ -18,6 +22,21 @@ class LoginWindow(QDialog):
 
     def initUI(self):
         layout = QVBoxLayout()
+
+        menu_bar = QMenuBar(self)
+
+        view_menu = menu_bar.addMenu("View")
+        
+        light_mode_action = QAction("Light Mode", self)
+        dark_mode_action = QAction("Dark Mode", self)
+
+        light_mode_action.triggered.connect(self.set_light_mode)
+        dark_mode_action.triggered.connect(self.set_dark_mode)
+
+        view_menu.addAction(light_mode_action)
+        view_menu.addAction(dark_mode_action)
+
+        layout.setMenuBar(menu_bar)
 
         self.username_label = QLabel("Username")
         self.username_input = QLineEdit()
@@ -46,7 +65,8 @@ class LoginWindow(QDialog):
 
         if login_user(username, password):
             QMessageBox.information(self, "Success", "Login successful")
-            self.open_main_window(username)  # Proceed to the main window
+            self.login_successful.emit(username)  # Emit the signal with the username
+            self.close()
         else:
             QMessageBox.warning(self, "Error", "Invalid username or password")
 
@@ -62,5 +82,13 @@ class LoginWindow(QDialog):
         self.main_window = MainWindow(username)
         self.main_window.show()
         self.close()
+
+
+    def set_light_mode(self):
+        apply_light_mode(QApplication.instance())
+    
+
+    def set_dark_mode(self):
+        apply_dark_mode(QApplication.instance())
 
 from auth.register import RegisterWindow
