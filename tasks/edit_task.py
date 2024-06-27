@@ -30,6 +30,10 @@ class EditTaskWindow(QWidget):
         self.due_date_input = QDateEdit()
         self.due_date_input.setDate(QDate.fromString(self.task[5], "yyyy-MM-dd"))
         self.status_label = QLabel("Status")
+        self.priority_label = QLabel("Priority")
+        self.priority_input = QComboBox()
+        self.priority_input.addItems(["Low", "Medium", "High"])
+        self.priority_input.setCurrentText(self.task[8])
         self.status_input = QComboBox()
         self.status_input.addItems(["Not Started", "In Progress", "Completed"])
         self.status_input.setCurrentText(self.task[6])
@@ -63,6 +67,8 @@ class EditTaskWindow(QWidget):
         layout.addWidget(self.due_date_input)
         layout.addWidget(self.status_label)
         layout.addWidget(self.status_input)
+        layout.addWidget(self.priority_label)
+        layout.addWidget(self.priority_input)
         layout.addWidget(self.checkboxes_label)
         layout.addLayout(self.checkboxes_layout)
         layout.addWidget(self.add_checkbox_button)
@@ -102,13 +108,14 @@ class EditTaskWindow(QWidget):
         status = self.status_input.currentText()
         checkboxes = checkboxes_to_list(self.checkboxes_layout)
         assignees = [item.data(Qt.UserRole) for item in self.assigned_users_list.selectedItems()]
+        priority = self.priority_input.currentText()
 
         is_valid, message = validate_task(title, start_date, due_date)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
 
-        update_task(self.task[0], title, description, start_date, due_date, status, checkboxes, assignees)
+        update_task(self.task[0], title, description, start_date, due_date, status, checkboxes, assignees, priority)  # Pass all arguments
         self.task_updated.emit()
         QMessageBox.information(self, "Success", "Task updated successfully")
         self.close()
