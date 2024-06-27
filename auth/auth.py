@@ -38,3 +38,12 @@ def login_user(username, password):
     
     stored_password = result[0]
     return bcrypt.checkpw(password.encode('utf-8'), stored_password)
+
+
+def is_username_available(username):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM users WHERE username = ?", (username,))
+    result = cursor.fetchone()
+    conn.close()
+    return result is None

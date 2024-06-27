@@ -35,8 +35,11 @@ class TaskCard(QWidget):
         self.status_label = QLabel(f"Status: {self.task[6]}")
         layout.addWidget(self.status_label)
 
+        self.priority_label = QLabel(f"Priority: {self.task[8]}")
+        layout.addWidget(self.priority_label)
+
         # Assignees
-        self.assignees_label = QLabel(f"Assignees: {self.task[8]}")  # Assignees are at index 8
+        self.assignees_label = QLabel(f"Assignees: {self.task[9]}")  # Assignees are at index 8
         layout.addWidget(self.assignees_label)
 
         self.checkbox_layout = QVBoxLayout()
