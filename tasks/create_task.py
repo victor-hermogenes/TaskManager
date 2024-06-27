@@ -32,6 +32,9 @@ class CreateTaskWindow(QWidget):
         self.status_label = QLabel("Status")
         self.status_input = QComboBox()
         self.status_input.addItems(["Not Started", "In Progress", "Completed"])
+        self.priority_label = QLabel("Priority")
+        self.priority_input = QComboBox()
+        self.priority_input.addItems(["Low", "Medium", "High"])
         self.checkboxes_label = QLabel("Subtasks")
         self.checkboxes_layout = QVBoxLayout()
 
@@ -56,6 +59,8 @@ class CreateTaskWindow(QWidget):
         layout.addWidget(self.due_date_input)
         layout.addWidget(self.status_label)
         layout.addWidget(self.status_input)
+        layout.addWidget(self.priority_label)
+        layout.addWidget(self.priority_input)
         layout.addWidget(self.checkboxes_label)
         layout.addLayout(self.checkboxes_layout)
         layout.addWidget(self.add_checkbox_button)
@@ -87,13 +92,14 @@ class CreateTaskWindow(QWidget):
         status = self.status_input.currentText()
         checkboxes = checkboxes_to_list(self.checkboxes_layout)
         assignees = [item.data(Qt.UserRole) for item in self.assigned_users_list.selectedItems()]
+        priority = self.priority_input.currentText()
 
         is_valid, message = validate_task(title, start_date, due_date)
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
 
-        create_task(self.user_id, title, description, start_date, due_date, status, checkboxes, assignees)
+        create_task(self.user_id, title, description, start_date, due_date, status, checkboxes, assignees, priority)
         self.task_created.emit()
         QMessageBox.information(self, "Success", "Task created successfully")
         self.close()
