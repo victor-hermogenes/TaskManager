@@ -26,6 +26,7 @@ def create_tables(conn):
         due_date TEXT,
         status TEXT,
         checkboxes TEXT,
+        priority TEXT,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )''')
 
@@ -59,12 +60,12 @@ def seed_database():
 
     # Add some initial tasks
     cursor.execute('''
-    INSERT OR IGNORE INTO tasks (user_id, title, description, start_date, due_date, status, checkboxes)
-    VALUES ((SELECT id FROM users WHERE username = 'admin'), 'Initial Task 1', 'Description for initial task 1', '2024-01-01', '2024-01-10', 'Not Started', 'Subtask 1,Subtask 2')
+    INSERT OR IGNORE INTO tasks (user_id, title, description, start_date, due_date, status, checkboxes, priority)
+    VALUES ((SELECT id FROM users WHERE username = 'admin'), 'Initial Task 1', 'Description for initial task 1', '2024-01-01', '2024-01-10', 'Not Started', 'Subtask 1,Subtask 2', 'High')
     ''')
     cursor.execute('''
-    INSERT OR IGNORE INTO tasks (user_id, title, description, start_date, due_date, status, checkboxes)
-    VALUES ((SELECT id FROM users WHERE username = 'admin'), 'Initial Task 2', 'Description for initial task 2', '2024-01-02', '2024-01-11', 'In Progress', 'Subtask 1,Subtask 2')
+    INSERT OR IGNORE INTO tasks (user_id, title, description, start_date, due_date, status, checkboxes, priority)
+    VALUES ((SELECT id FROM users WHERE username = 'admin'), 'Initial Task 2', 'Description for initial task 2', '2024-01-02', '2024-01-11', 'In Progress', 'Subtask 1,Subtask 2', 'Medium')
     ''')
 
     # Assign users to tasks
@@ -100,12 +101,12 @@ def get_all_users():
     return users
 
 
-def create_task(user_id, title, description, start_date, due_date, status, checkboxes, assignees):
+def create_task(user_id, title, description, start_date, due_date, status, checkboxes, assignees, priority):
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute('''
-    INSERT INTO tasks (user_id, title, description, start_date, due_date, status, checkboxes)
-    VALUES (?, ?, ?, ?, ?, ?, ?)''', (user_id, title, description, start_date, due_date, status, ','.join(checkboxes)))
+    INSERT INTO tasks (user_id, title, description, start_date, due_date, status, checkboxes, priority)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (user_id, title, description, start_date, due_date, status, ','.join(checkboxes), priority))
     task_id = cursor.lastrowid
 
     for assignee in assignees:
@@ -117,12 +118,12 @@ def create_task(user_id, title, description, start_date, due_date, status, check
     conn.close()
 
 
-def update_task(task_id, title, description, start_date, due_date, status, checkboxes, assignees):
+def update_task(task_id, title, description, start_date, due_date, status, checkboxes, assignees, priority):
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute('''
-    UPDATE tasks SET title = ?, description = ?, start_date = ?, due_date = ?, status = ?, checkboxes = ?
-    WHERE id = ?''', (title, description, start_date, due_date, status, ','.join(checkboxes), task_id))
+    UPDATE tasks SET title = ?, description = ?, start_date = ?, due_date = ?, status = ?, checkboxes = ?, priority = ?
+    WHERE id = ?''', (title, description, start_date, due_date, status, ','.join(checkboxes), priority, task_id))
 
     cursor.execute('DELETE FROM task_assignees WHERE task_id = ?', (task_id,))
     for assignee in assignees:
