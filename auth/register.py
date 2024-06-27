@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication, QMenuBar, QAction
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication, QMenuBar, QAction, QProgressBar
 from auth.auth import register_user
-from utils.validators import validate_username, validate_password   # Import validators
+from utils.validators import validate_username, validate_password    # Import validators
+from utils.password_strengh import evaluate_password_strength    # Import password strength evaluator    
 from ui.dark_mode import apply_dark_mode
 from ui.light_mode import apply_light_mode
 
@@ -33,9 +34,12 @@ class RegisterWindow(QWidget):
 
         self.username_label = QLabel("Username")
         self.username_input = QLineEdit()
+        self.username_input.textChanged.connect(self.check_username_availability)   # Connect text change username availability
         self.password_label = QLabel("Password")
         self.password_input = QLineEdit()
         self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_input.textChanged.connect(self.update_password_strength)  # Connect text change to update password strength
+        self.password_strength_bar = QProgressBar()
         self.confirm_label = QLabel("Confirm Password")
         self.confirm_input = QLineEdit()
         self.confirm_input.setEchoMode(QLineEdit.Password)
@@ -49,12 +53,30 @@ class RegisterWindow(QWidget):
         layout.addWidget(self.username_input)
         layout.addWidget(self.password_label)
         layout.addWidget(self.password_input)
+        layout.addWidget(self.password_strength_bar)
         layout.addWidget(self.confirm_label)
         layout.addWidget(self.confirm_input)
         layout.addWidget(self.register_button)
         layout.addWidget(self.back_button)
 
         self.setLayout(layout)
+
+    
+    def check_username_availability(self):
+        username = self.username_input.text()
+
+        from auth.auth import is_username_available
+        
+        if not is_username_available(username):
+            self.username_input.setStyleSheet("border: 1px solid red;")
+        else:
+            self.username_input.setStyleSheet("border: 1px solid green;")
+
+
+    def update_password_strength(self):
+        password = self.password_input.text()
+        strength = evaluate_password_strength(password)
+        self.password_strength_bar.setValue(strength * 20)    # Set progress bar value based on strength
 
     
     def register(self):
