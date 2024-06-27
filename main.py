@@ -6,17 +6,20 @@ from ui.main_window import MainWindow
 
 def main():
     app = QApplication(sys.argv)
-    
+
     login_window = LoginWindow()
-    login_window.login_successful.connect(show_main_window)
+
+
+    def on_login_success(username):
+        login_window.close()
+        main_window = MainWindow(username)
+        main_window.show()
+
+    login_window.login_successful.connect(on_login_success)
     login_window.show()
 
     sys.exit(app.exec_())
 
-
-def show_main_window(username):
-    main_window = MainWindow(username)
-    main_window.show()
 
 if __name__ == "__main__":
     main()
