@@ -13,6 +13,8 @@ from ui.light_mode import apply_light_mode
 
 class LoginWindow(QWidget):
     login_successful = pyqtSignal(str)  # Signal to indicate successful login with username
+
+    
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Login")
