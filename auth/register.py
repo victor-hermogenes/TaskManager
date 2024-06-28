@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication, QMenuBar, QAction, QProgressBar, QProgressDialog
-from PyQt5.QtCore import Qt, QThread
+from PyQt5.QtCore import Qt, QThread, QTimer
 from auth.auth import register_user
 from utils.validators import validate_username, validate_password    # Import validators
 from utils.password_strengh import evaluate_password_strength    # Import password strength evaluator    
@@ -22,12 +22,10 @@ class RegisterWindow(QWidget):
         self.setGeometry(100, 100, 300, 200)
         self.initUI()
 
-    
     def initUI(self):
         layout = QVBoxLayout()
 
         menu_bar = QMenuBar(self)
-
         view_menu = menu_bar.addMenu("View")
         
         light_mode_action = QAction("Light Mode", self)
@@ -38,12 +36,11 @@ class RegisterWindow(QWidget):
 
         view_menu.addAction(light_mode_action)
         view_menu.addAction(dark_mode_action)
-
         layout.setMenuBar(menu_bar)
 
         self.username_label = QLabel("Username")
         self.username_input = QLineEdit()
-        self.username_input.textChanged.connect(self.check_username_availability)   # Connect text change username availability
+        self.username_input.textChanged.connect(self.delayed_check_username_availability)  # Connect text change to delayed check
         self.password_label = QLabel("Password")
         self.password_input = QLineEdit()
         self.password_input.setEchoMode(QLineEdit.Password)
@@ -70,35 +67,41 @@ class RegisterWindow(QWidget):
 
         self.setLayout(layout)
 
-    
+    def delayed_check_username_availability(self):
+        if hasattr(self, 'username_timer'):
+            self.username_timer.stop()
+        else:
+            self.username_timer = QTimer()
+            self.username_timer.setSingleShot(True)
+            self.username_timer.timeout.connect(self.check_username_availability)
+        self.username_timer.start(500)
+
     def check_username_availability(self):
         username = self.username_input.text()
+        if not validate_username(username)[0]:
+            self.username_input.setStyleSheet("border: 1px solid red;")
+            return
 
         from auth.auth import is_username_available
-
         if not is_username_available(username):
             self.username_input.setStyleSheet("border: 1px solid red;")
         else:
             self.username_input.setStyleSheet("border: 1px solid green;")
 
-
     def update_password_strength(self):
         password = self.password_input.text()
         strength = evaluate_password_strength(password)
-        self.password_strength_bar.setValue(strength * 20)    # Set progress bar value based on strength
+        self.password_strength_bar.setValue(strength * 20)  # Set progress bar value based on strength
 
-    
     def show_loading_dialog(self, message="Loading..."):
         self.loading_dialog = QProgressDialog(message, None, 0, 0, self)
         self.loading_dialog.setWindowModality(Qt.WindowModal)
         self.loading_dialog.setCancelButton(None)
         self.loading_dialog.show()
 
-
     def hide_loading_dialog(self):
         self.loading_dialog.hide()
 
-    
     def register(self):
         username = self.username_input.text()
         password = self.password_input.text()
@@ -133,7 +136,6 @@ class RegisterWindow(QWidget):
         self.worker.result.connect(self.handle_register_result)
         self.thread.start()
 
-
     def handle_register_result(self, success):
         self.hide_loading_dialog()
         if success:
@@ -141,19 +143,16 @@ class RegisterWindow(QWidget):
             self.show_login()
         else:
             QMessageBox.warning(self, "Error", "Username already exists")
-        
 
     def show_login(self):
         self.login_window = LoginWindow()
         self.login_window.show()
         self.close()
 
-
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())
         save_style_preference('light')
     
-
     def set_dark_mode(self):
         apply_dark_mode(QApplication.instance())
         save_style_preference('dark')
