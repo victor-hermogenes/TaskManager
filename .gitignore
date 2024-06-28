@@ -5,3 +5,4 @@ tasks/__pycache__
 ui/__pycache__
 utils/__pycache__
 task_manager.db
+__pycache__

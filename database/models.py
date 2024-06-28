@@ -15,6 +15,7 @@ def create_tables(conn):
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL
     )''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_username ON users (username)')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS tasks (
@@ -29,6 +30,7 @@ def create_tables(conn):
         priority TEXT,
         FOREIGN KEY(user_id) REFERENCES users(id)
     )''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS ifx_user_id ON tasks (user_id)')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS task_assignees (
@@ -38,6 +40,8 @@ def create_tables(conn):
         FOREIGN KEY(user_id) REFERENCES users(id),
         PRIMARY KEY (task_id, user_id)
     )''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_id ON task_assignees (task_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_assignee_user_id ON task_assignees (user_id)')
 
     conn.commit()
 
@@ -135,7 +139,7 @@ def update_task(task_id, title, description, start_date, due_date, status, check
     conn.close()
 
 
-def get_tasks_by_user(user_id):
+def get_tasks_by_user(user_id, offset=0, limit=10):
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute('''
@@ -145,7 +149,8 @@ def get_tasks_by_user(user_id):
     LEFT JOIN users ON task_assignees.user_id = users.id
     WHERE tasks.user_id = ? OR task_assignees.user_id = ?
     GROUP BY tasks.id
-    ''', (user_id, user_id))
+    LIMIT ? OFFSET ?
+    ''', (user_id, user_id, limit, offset))
     tasks = cursor.fetchall()
     conn.close()
     return tasks

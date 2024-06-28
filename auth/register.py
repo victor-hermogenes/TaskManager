@@ -1,9 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication, QMenuBar, QAction, QProgressBar
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication, QMenuBar, QAction, QProgressBar, QProgressDialog
+from PyQt5.QtCore import Qt, QThread
 from auth.auth import register_user
 from utils.validators import validate_username, validate_password    # Import validators
 from utils.password_strengh import evaluate_password_strength    # Import password strength evaluator    
 from ui.dark_mode import apply_dark_mode
 from ui.light_mode import apply_light_mode
+from worker import Worker
 
 CONFIG_FILE = 'config.txt'
 
@@ -86,6 +88,17 @@ class RegisterWindow(QWidget):
         self.password_strength_bar.setValue(strength * 20)    # Set progress bar value based on strength
 
     
+    def show_loading_dialog(self, message="Loading..."):
+        self.loading_dialog = QProgressDialog(message, None, 0, 0, self)
+        self.loading_dialog.setWindowModality(Qt.WindowModal)
+        self.loading_dialog.setCancelButton(None)
+        self.loading_dialog.show()
+
+
+    def hide_loading_dialog(self):
+        self.loading_dialog.hide()
+
+    
     def register(self):
         username = self.username_input.text()
         password = self.password_input.text()
@@ -104,8 +117,26 @@ class RegisterWindow(QWidget):
         if password != confirm_password:
             QMessageBox.warning(self, "Error", "Passwords do not match")
             return
+        
+        self.show_loading_dialog("Registering...")
 
-        if register_user(username, password):
+        def register_func(username, password):
+            return register_user(username, password)
+        
+        self.thread = QThread()
+        self.worker = Worker(register_func, username, password)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.result.connect(self.handle_register_result)
+        self.thread.start()
+
+
+    def handle_register_result(self, success):
+        self.hide_loading_dialog()
+        if success:
             QMessageBox.information(self, "Success", "Registration successful")
             self.show_login()
         else:
@@ -116,6 +147,7 @@ class RegisterWindow(QWidget):
         self.login_window = LoginWindow()
         self.login_window.show()
         self.close()
+
 
     def set_light_mode(self):
         apply_light_mode(QApplication.instance())

@@ -4,11 +4,12 @@ import os
 # Ensure the directory containing the 'task_card' module is in the system path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QMenuBar, QAction, QApplication
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QMenuBar, QAction, QApplication, QProgressDialog
+from PyQt5.QtCore import pyqtSignal, Qt, QThread
 from auth.auth import login_user
 from ui.dark_mode import apply_dark_mode
 from ui.light_mode import apply_light_mode
+from worker import Worker
 
 CONFIG_FILE = 'config.txt'
 
@@ -67,19 +68,49 @@ class LoginWindow(QWidget):
 
         self.setLayout(layout)
 
+    
+    def show_loading_dialog(self, message="Loading..."):
+        self.loading_dialog = QProgressDialog(message, None, 0, 0, self)
+        self.loading_dialog.setWindowModality(Qt.WindowModal)
+        self.loading_dialog.setCancelButton(None)
+        self.loading_dialog.show()
+
+
+    def hide_loading_dialog(self):
+        self.loading_dialog.hide()
+
 
     def login(self):
         username = self.username_input.text()
         password = self.password_input.text()
 
-        if login_user(username, password):
+        self.show_loading_dialog("Logging in...")
+
+
+        def login_func(username, password):
+            return login_user(username, password)
+
+        self.thread = QThread()
+        self.worker = Worker(login_func, username, password)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.result.connect(self.handle_login_result)
+        self.thread.start()
+
+
+    def handle_login_result(self, success):
+        self.hide_loading_dialog()
+        if success:
             QMessageBox.information(self, "Success", "Login successful")
-            self.login_successful.emit(username)  # Emit the signal with the username
-            self.open_main_window(username) # Proceed to the main window
+            self.login_successful.emit(self.username_input.text())  # Emit the signal with the username
+            self.open_main_window(self.username_input.text())  # Proceed to the main window
             self.close()
         else:
             QMessageBox.warning(self, "Error", "Invalid username or password")
-
+    
 
     def show_register(self):
         self.register_window = RegisterWindow()

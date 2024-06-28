@@ -1,12 +1,14 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox, QListWidget, QListWidgetItem
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QTextEdit, QDateEdit, QPushButton, QComboBox, QCheckBox, QMessageBox, QListWidget, QListWidgetItem, QProgressDialog
+from PyQt5.QtCore import pyqtSignal, Qt, QThread
 from database.models import create_task, get_all_users
 from utils.validators import validate_task
 from utils.helpers import checkboxes_to_list
+from worker import Worker
 
 
 class CreateTaskWindow(QWidget):
     task_created = pyqtSignal()  # Signal to indicate task creation
+
 
     def __init__(self, user_id):
         super().__init__()
@@ -83,6 +85,17 @@ class CreateTaskWindow(QWidget):
         checkbox = QCheckBox("New Subtask")
         self.checkboxes_layout.addWidget(checkbox)
 
+
+    def show_loading_dialog(self,message="Creating task..."):
+        self.loading_dialog = QProgressDialog(message, None, 0, 0, self)
+        self.loading_dialog.setWindowModality(Qt.WindowModal)
+        self.loading_dialog.setCancelButton(None)
+        self.loading_dialog.show
+    
+
+    def hide_loading_dialog(self):
+        self.loading_dialog.hide()
+
         
     def create_task(self):
         title = self.title_input.text()
@@ -98,8 +111,28 @@ class CreateTaskWindow(QWidget):
         if not is_valid:
             QMessageBox.warning(self, "Error", message)
             return
+        
+        self.show_loading_dialog("Creating task...")
 
-        create_task(self.user_id, title, description, start_date, due_date, status, checkboxes, assignees, priority)
-        self.task_created.emit()
-        QMessageBox.information(self, "Success", "Task created successfully")
-        self.close()
+
+        def create_task_func(user_id, title, description, start_date, due_date, status, checkboxes, assignees, priority):
+            create_task(user_id, title, description, start_date, due_date, status, checkboxes, assignees, priority)
+            return True
+
+        self.thread = QThread()
+        self.worker = Worker(create_task_func, self.user_id, title, description, start_date, due_date, status, checkboxes, assignees, priority)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.result.connect(self.handle_create_task_result)
+        self.thread.start()
+
+
+    def handle_create_task_result(self, success):
+        self.hide_loading_dialog()
+        if success:
+            self.task_created.emit()
+            QMessageBox.information(self, "Success", "Task created successfully")
+            self.close()
